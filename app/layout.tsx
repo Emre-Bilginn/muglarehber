@@ -32,9 +32,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="tr">
-      <head>
-        <script src="https://apps.abacus.ai/chatllm/appllm-lib.js"></script>
-      </head>
       <body className={inter.className}>
         <Header />
         <main className="min-h-screen">{children}</main>
