@@ -1,0 +1,67 @@
+generator client {
+    provider = "prisma-client-js"
+    binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+    output = "/home/ubuntu/muglarehber/nextjs_space/node_modules/.prisma/client"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  description String?
+  icon        String?   @default("MapPin")
+  order       Int       @default(0)
+  articles    Article[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Article {
+  id          String    @id @default(cuid())
+  title       String
+  slug        String    @unique
+  summary     String
+  content     String    @db.Text
+  imageUrl    String?
+  gpsLat      Float?
+  gpsLng      Float?
+  highlights  String[]
+  isFeatured  Boolean   @default(false)
+  viewCount   Int       @default(0)
+  categoryId  String
+  category    Category  @relation(fields: [categoryId], references: [id])
+  comments    Comment[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([categoryId])
+  @@index([slug])
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  content   String   @db.Text
+  isApproved Boolean @default(true)
+  articleId String
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([articleId])
+}
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String
+  message   String   @db.Text
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
