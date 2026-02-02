@@ -1,0 +1,8 @@
+node_modules
+.next
+.env
+tsconfig.tsbuildinfo
+.abacus.donotdelete
+.yarn/cache
+.yarn/unplugged
+.yarn/install-state.gz
