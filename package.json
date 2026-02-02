@@ -9,7 +9,7 @@
 
   "render:build": "npx prisma generate && yarn build",
   "render:start": "npx prisma migrate deploy && yarn start"
-}
+},
 
   "prisma": {
     "seed": "tsx --require dotenv/config scripts/seed.ts"
