@@ -11,8 +11,10 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXTAUTH_URL || 'http://localhost:3000'),
   title: 'Keşfet Muğla - Muğla Gezi ve Turizm Rehberi',
-  description: 'Muğla bölgesinin en kapsamlı gezi rehberi. Bodrum, Fethiye, Marmaris, Datça ve daha fazlası için plajlar, restoranlar, oteller ve aktiviteler hakkında bilgi edinin.',
-  keywords: 'Muğla, Bodrum, Fethiye, Marmaris, Ölüdeniz, Dalyan, tatil, gezi rehberi, plajlar, oteller, keşfet muğla',
+  description:
+    'Muğla bölgesinin en kapsamlı gezi rehberi. Bodrum, Fethiye, Marmaris, Datça ve daha fazlası için plajlar, restoranlar, oteller ve aktiviteler hakkında bilgi edinin.',
+  keywords:
+    'Muğla, Bodrum, Fethiye, Marmaris, Ölüdeniz, Dalyan, tatil, gezi rehberi, plajlar, oteller, keşfet muğla',
   openGraph: {
     title: 'Keşfet Muğla - Muğla Gezi ve Turizm Rehberi',
     description: 'Muğla bölgesinin en kapsamlı gezi rehberi',
@@ -32,6 +34,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="tr">
+      <head>
+        {/* Google AdSense doğrulama */}
+        <script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9872386753585488"
+          crossOrigin="anonymous"
+        ></script>
+      </head>
+
       <body className={inter.className}>
         <Header />
         <main className="min-h-screen">{children}</main>
