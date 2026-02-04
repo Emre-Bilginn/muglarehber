@@ -3,6 +3,8 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import Header from '@/components/header';
 import Footer from '@/components/footer';
+import Script from "next/script";
+
 
 export const dynamic = "force-dynamic";
 
@@ -33,21 +35,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="tr">
-      <head>
-        {/* Google AdSense doğrulama */}
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9872386753585488"
-          crossOrigin="anonymous"
-        ></script>
-      </head>
+  <html lang="tr">
+    <head>
+      <Script
+        async
+        strategy="afterInteractive"
+        src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9872386753585488"
+        crossOrigin="anonymous"
+      />
+    </head>
 
-      <body className={inter.className}>
-        <Header />
-        <main className="min-h-screen">{children}</main>
-        <Footer />
-      </body>
-    </html>
-  );
+    <body className={inter.className}>
+      <Header />
+      <main className="min-h-screen">{children}</main>
+      <Footer />
+    </body>
+  </html>
+);
+
 }
