@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXTAUTH_URL || "http://localhost:3000"),
+  metadataBase: new URL("https://kesfetmugla.com"),
   title: "Keşfet Muğla - Muğla Gezi ve Turizm Rehberi",
   description:
     "Muğla bölgesinin en kapsamlı gezi rehberi. Bodrum, Fethiye, Marmaris, Datça ve daha fazlası için plajlar, restoranlar, oteller ve aktiviteler hakkında bilgi edinin.",
@@ -21,17 +21,28 @@ export const metadata: Metadata = {
     description: "Muğla bölgesinin en kapsamlı gezi rehberi",
     images: ["/og-image.png"],
     type: "website",
+    url: "https://kesfetmugla.com",
   },
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
   },
+
+  // ✅ AdSense site doğrulama (Meta etiket yöntemi)
+  other: {
+    "google-adsense-account": "ca-pub-9872386753585488",
+  },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="tr">
       <body className={inter.className}>
+        {/* ✅ AdSense script (reklam göstermek için) */}
         <Script
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9872386753585488"
           strategy="beforeInteractive"
