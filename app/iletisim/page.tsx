@@ -88,7 +88,9 @@ export default function ContactPage() {
                 </div>
                 <h3 className="font-semibold text-gray-900">Telefon</h3>
               </div>
-              <p className="text-gray-600 text-sm">+90 252 123 4567</p>
+              <p className="text-gray-600 text-sm">
+                Şu an yalnızca e-posta üzerinden iletişim sağlanmaktadır.
+              </p>
             </div>
 
             <div className="bg-white rounded-xl shadow-md p-6">

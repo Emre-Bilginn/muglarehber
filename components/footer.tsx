@@ -35,7 +35,7 @@ export default function Footer() {
               </div>
               <div className="flex items-center gap-2">
                 <Phone className="w-4 h-4 text-sky-400" />
-                <span>+90 252 123 4567</span>
+                <span>Şu an yalnızca e-posta üzerinden iletişim sağlanmaktadır.</span>
               </div>
               <Link href="/iletisim" className="text-sky-400 hover:text-sky-300 transition-colors mt-2">
                 Bize Ulaşın →
