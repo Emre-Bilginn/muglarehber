@@ -12,6 +12,8 @@ Required:
 - DATABASE_URL
 - NEXTAUTH_URL
 - NODE_VERSION=18
+ - NEXT_PUBLIC_SITE_URL=https://kesfetmugla.com
+ - SITE_URL=https://kesfetmugla.com
 
 Also referenced in code (optional unless you set custom build/output paths):
 - NEXT_DIST_DIR

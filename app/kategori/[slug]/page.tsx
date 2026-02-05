@@ -1,10 +1,9 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import prisma from '@/lib/db';
 import AdPlaceholder from '@/components/ad-placeholder';
 import CategoryIcon from '@/components/category-icon';
-import { ArrowRight, Calendar } from 'lucide-react';
+import ArticleCard from '@/components/article-card';
 
 export const dynamic = "force-dynamic";
 
@@ -112,43 +111,14 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               <div className="space-y-6">
                 {articles?.map?.((article: Article, index: number) => (
                   <div key={article?.id ?? index}>
-                    <Link href={`/makale/${article?.slug ?? ''}`} className="group">
-                      <article className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all overflow-hidden flex flex-col md:flex-row">
-                        <div className="relative w-full md:w-64 aspect-video md:aspect-auto flex-shrink-0 bg-gray-100">
-                          {article?.imageUrl && (
-                            <Image
-                              src={article?.imageUrl ?? ''}
-                              alt={article?.title ?? ''}
-                              fill
-                              className="object-cover group-hover:scale-105 transition-transform duration-500"
-                            />
-                          )}
-                        </div>
-                        <div className="p-5 flex-1">
-                          <h2 className="text-lg font-bold text-gray-900 group-hover:text-sky-600 transition-colors mb-2">
-                            {article?.title ?? ''}
-                          </h2>
-                          <p className="text-gray-600 text-sm line-clamp-2 mb-3">{article?.summary ?? ''}</p>
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-1 text-xs text-gray-400">
-                              <Calendar className="w-3 h-3" />
-                              <span>
-                                {article?.createdAt
-                                  ? new Date(article?.createdAt)?.toLocaleDateString?.('tr-TR', {
-                                      day: 'numeric',
-                                      month: 'long',
-                                      year: 'numeric',
-                                    })
-                                  : ''}
-                              </span>
-                            </div>
-                            <span className="flex items-center gap-1 text-sky-600 text-sm font-medium">
-                              Oku <ArrowRight className="w-4 h-4" />
-                            </span>
-                          </div>
-                        </div>
-                      </article>
-                    </Link>
+                    <ArticleCard
+                      variant="row"
+                      href={`/makale/${article?.slug ?? ''}`}
+                      title={article?.title ?? ''}
+                      summary={article?.summary ?? ''}
+                      imageUrl={article?.imageUrl ?? ''}
+                      date={article?.createdAt ? article?.createdAt?.toISOString?.() : ''}
+                    />
                     {(index ?? 0) === 1 && <AdPlaceholder size="inline" className="mt-6" />}
                   </div>
                 )) ?? null}

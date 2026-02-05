@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import Image from 'next/image';
+import ImageWithFallback from '@/components/image-with-fallback';
 import { notFound } from 'next/navigation';
 import prisma from '@/lib/db';
 import AdPlaceholder from '@/components/ad-placeholder';
@@ -104,15 +104,14 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     <div className="pt-16">
       {/* Header Image */}
       <section className="relative h-[40vh] md:h-[50vh] bg-gray-900">
-        {article?.imageUrl && (
-          <Image
-            src={article?.imageUrl ?? ''}
-            alt={article?.title ?? ''}
-            fill
-            className="object-cover opacity-70"
-            priority
-          />
-        )}
+        <ImageWithFallback
+          src={article?.imageUrl ?? undefined}
+          alt={article?.title ?? ''}
+          fill
+          sizes="100vw"
+          className="object-cover opacity-70"
+          priority
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/50 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
           <div className="max-w-4xl mx-auto">
@@ -220,14 +219,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                   {relatedArticles?.map?.((related: RelatedArticle) => (
                     <Link key={related?.id ?? ''} href={`/makale/${related?.slug ?? ''}`} className="group flex gap-3">
                       <div className="relative w-20 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-                        {related?.imageUrl && (
-                          <Image
-                            src={related?.imageUrl ?? ''}
-                            alt={related?.title ?? ''}
-                            fill
-                            className="object-cover"
-                          />
-                        )}
+                        <ImageWithFallback
+                          src={related?.imageUrl ?? undefined}
+                          alt={related?.title ?? ''}
+                          fill
+                          sizes="80px"
+                          className="object-cover"
+                        />
                       </div>
                       <div className="flex-1 min-w-0">
                         <h4 className="font-medium text-gray-900 group-hover:text-sky-600 transition-colors line-clamp-2 text-sm">

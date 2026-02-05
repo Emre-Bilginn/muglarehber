@@ -15,11 +15,12 @@ export default function AdPlaceholder({ size = 'banner', className = '' }: AdPla
 
   return (
     <div
-      className={`ad-placeholder rounded-lg flex items-center justify-center ${sizeClass} ${className ?? ''}`}
+      className={`ad-placeholder rounded-2xl flex items-center justify-center ${sizeClass} ${className ?? ''}`}
+      aria-hidden="true"
     >
       <div className="text-center">
-        <p className="text-gray-400 text-sm font-medium">Reklam Alanı</p>
-        <p className="text-gray-300 text-xs">Google AdSense</p>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">Reklam</p>
+        <p className="text-xs text-slate-400/80">Alan ayrıldı</p>
       </div>
     </div>
   );

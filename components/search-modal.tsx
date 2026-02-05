@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Search, X, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
+import ImageWithFallback from './image-with-fallback';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface SearchResult {
@@ -109,14 +109,13 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                       className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors"
                     >
                       <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-                        {result?.imageUrl && (
-                          <Image
-                            src={result?.imageUrl ?? ''}
-                            alt={result?.title ?? ''}
-                            fill
-                            className="object-cover"
-                          />
-                        )}
+                        <ImageWithFallback
+                          src={result?.imageUrl ?? undefined}
+                          alt={result?.title ?? ''}
+                          fill
+                          sizes="64px"
+                          className="object-cover"
+                        />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-gray-900 truncate">{result?.title ?? ''}</p>
