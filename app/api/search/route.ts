@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
+import { logServerDebug, logServerError } from '@/lib/server-log';
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +13,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ articles: [] });
     }
 
-    const articles = await prisma?.article?.findMany?.({
+    const articles = await prisma.article.findMany({
       where: {
         OR: [
           { title: { contains: query ?? '', mode: 'insensitive' } },
@@ -26,11 +27,16 @@ export async function GET(request: NextRequest) {
         },
       },
       take: 10,
-    }) ?? [];
+    });
 
-    return NextResponse.json({ articles: articles ?? [] });
+    logServerDebug('api/search', 'Search completed', {
+      query,
+      count: articles.length,
+    });
+
+    return NextResponse.json({ articles });
   } catch (error) {
-    console.error('Search error:', error);
+    logServerError('api/search', 'Search failed', error);
     return NextResponse.json({ articles: [], error: 'Search failed' }, { status: 500 });
   }
 }

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import ImageWithFallback from '@/components/image-with-fallback';
 import { notFound } from 'next/navigation';
 import prisma from '@/lib/db';
+import { logServerDebug, logServerError } from '@/lib/server-log';
 import AdPlaceholder from '@/components/ad-placeholder';
 import CommentSection from '@/components/comment-section';
 import MapEmbed from '@/components/map-embed';
@@ -37,39 +38,74 @@ interface ArticlePageProps {
 }
 
 async function getArticle(slug: string): Promise<Article | null> {
-  const article = await prisma?.article?.findUnique?.({
-    where: { slug: slug ?? '' },
-    include: {
-      category: true,
-    },
-  });
+  try {
+    const article = await prisma.article.findUnique({
+      where: { slug: slug ?? '' },
+      include: {
+        category: true,
+      },
+    });
 
-  if (article) {
-    await prisma?.article?.update?.({
-      where: { id: article?.id ?? '' },
-      data: { viewCount: (article?.viewCount ?? 0) + 1 },
-    })?.catch?.(() => {});
+    logServerDebug('app/article', 'Fetched article detail', {
+      slug,
+      found: Boolean(article),
+      articleId: article?.id ?? null,
+    });
+
+    if (article) {
+      await prisma.article
+        .update({
+          where: { id: article?.id ?? '' },
+          data: { viewCount: (article?.viewCount ?? 0) + 1 },
+        })
+        .catch((error) => {
+          logServerError('app/article', 'Failed to increment article view count', error, {
+            slug,
+            articleId: article.id,
+          });
+        });
+    }
+
+    return article as Article | null;
+  } catch (error) {
+    logServerError('app/article', 'Failed to fetch article detail', error, {
+      slug,
+    });
+    throw error;
   }
-
-  return article as Article | null;
 }
 
 async function getRelatedArticles(categoryId: string, currentId: string): Promise<RelatedArticle[]> {
-  const articles = await prisma?.article?.findMany?.({
-    where: {
-      categoryId: categoryId ?? '',
-      id: { not: currentId ?? '' },
-    },
-    take: 3,
-    orderBy: { createdAt: 'desc' },
-    select: {
-      id: true,
-      title: true,
-      slug: true,
-      imageUrl: true,
-    },
-  }) ?? [];
-  return articles as RelatedArticle[];
+  try {
+    const articles = await prisma.article.findMany({
+      where: {
+        categoryId: categoryId ?? '',
+        id: { not: currentId ?? '' },
+      },
+      take: 3,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        imageUrl: true,
+      },
+    });
+
+    logServerDebug('app/article', 'Fetched related articles', {
+      categoryId,
+      currentId,
+      count: articles.length,
+    });
+
+    return articles as RelatedArticle[];
+  } catch (error) {
+    logServerError('app/article', 'Failed to fetch related articles', error, {
+      categoryId,
+      currentId,
+    });
+    return [];
+  }
 }
 
 export async function generateMetadata({ params }: ArticlePageProps) {

@@ -1,11 +1,12 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/db';
+import { logServerDebug, logServerError } from '@/lib/server-log';
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const categories = await prisma?.category?.findMany?.({
+    const categories = await prisma.category.findMany({
       orderBy: {
         order: 'asc',
       },
@@ -14,7 +15,11 @@ export async function GET() {
           select: { articles: true },
         },
       },
-    }) ?? [];
+    });
+
+    logServerDebug('api/categories', 'Fetched categories', {
+      count: categories.length,
+    });
 
     const safeCategories = (categories ?? [])?.map?.((c: {
       id: string;
@@ -34,7 +39,7 @@ export async function GET() {
 
     return NextResponse.json({ categories: safeCategories });
   } catch (error) {
-    console.error('Get categories error:', error);
+    logServerError('api/categories', 'Failed to fetch categories', error);
     return NextResponse.json({ categories: [], error: 'Failed to fetch categories' }, { status: 500 });
   }
 }

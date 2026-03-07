@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
+import { logServerDebug, logServerError } from '@/lib/server-log';
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest) {
       whereClause.isFeatured = true;
     }
 
-    const articles = await prisma?.article?.findMany?.({
+    const articles = await prisma.article.findMany({
       where: whereClause,
       include: {
         category: {
@@ -31,7 +32,14 @@ export async function GET(request: NextRequest) {
         createdAt: 'desc',
       },
       take: limit,
-    }) ?? [];
+    });
+
+    logServerDebug('api/articles', 'Fetched articles', {
+      category,
+      featured,
+      limit,
+      count: articles.length,
+    });
 
     const safeArticles = (articles ?? [])?.map?.((a: {
       id: string;
@@ -53,7 +61,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ articles: safeArticles });
   } catch (error) {
-    console.error('Get articles error:', error);
+    logServerError('api/articles', 'Failed to fetch articles', error);
     return NextResponse.json({ articles: [], error: 'Failed to fetch articles' }, { status: 500 });
   }
 }

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Suspense } from 'react';
 import prisma from '@/lib/db';
+import { logServerDebug, logServerError } from '@/lib/server-log';
 import AdPlaceholder from '@/components/ad-placeholder';
 import CategoryIcon from '@/components/category-icon';
 import ArticleCard from '@/components/article-card';
@@ -31,21 +32,41 @@ interface Category {
 }
 
 async function getFeaturedArticles(): Promise<Article[]> {
-  const articles = await prisma?.article?.findMany?.({
-    where: { isFeatured: true },
-    include: { category: { select: { name: true, slug: true } } },
-    orderBy: { createdAt: 'desc' },
-    take: 4,
-  }) ?? [];
-  return articles as Article[];
+  try {
+    const articles = await prisma.article.findMany({
+      where: { isFeatured: true },
+      include: { category: { select: { name: true, slug: true } } },
+      orderBy: { createdAt: 'desc' },
+      take: 4,
+    });
+
+    logServerDebug('app/home', 'Fetched featured articles', {
+      count: articles.length,
+    });
+
+    return articles as Article[];
+  } catch (error) {
+    logServerError('app/home', 'Failed to fetch featured articles', error);
+    return [];
+  }
 }
 
 async function getCategories(): Promise<Category[]> {
-  const categories = await prisma?.category?.findMany?.({
-    orderBy: { order: 'asc' },
-    include: { _count: { select: { articles: true } } },
-  }) ?? [];
-  return categories as Category[];
+  try {
+    const categories = await prisma.category.findMany({
+      orderBy: { order: 'asc' },
+      include: { _count: { select: { articles: true } } },
+    });
+
+    logServerDebug('app/home', 'Fetched categories', {
+      count: categories.length,
+    });
+
+    return categories as Category[];
+  } catch (error) {
+    logServerError('app/home', 'Failed to fetch categories', error);
+    return [];
+  }
 }
 
 export default async function HomePage() {

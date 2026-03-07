@@ -2,14 +2,18 @@
   "name": "app",
   "private": true,
   "scripts": {
-  "dev": "next dev",
-  "build": "next build",
-  "start": "next start -p $PORT",
-  "lint": "next lint",
-
-  "render:build": "npx prisma generate && yarn build",
-  "render:start": "npx prisma migrate deploy && yarn start"
-},
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "postinstall": "prisma generate",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:db:push": "prisma db push",
+    "prisma:seed": "prisma db seed",
+    "render:build": "yarn prisma:generate && yarn build",
+    "render:start": "yarn prisma:migrate:deploy && yarn start"
+  },
 
   "prisma": {
     "seed": "tsx --require dotenv/config scripts/seed.ts"

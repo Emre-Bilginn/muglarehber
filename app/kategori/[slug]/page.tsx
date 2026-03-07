@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import prisma from '@/lib/db';
+import { logServerDebug, logServerError } from '@/lib/server-log';
 import AdPlaceholder from '@/components/ad-placeholder';
 import CategoryIcon from '@/components/category-icon';
 import ArticleCard from '@/components/article-card';
@@ -38,23 +39,47 @@ interface CategoryPageProps {
 }
 
 async function getCategory(slug: string): Promise<CategoryWithArticles | null> {
-  const category = await prisma?.category?.findUnique?.({
-    where: { slug: slug ?? '' },
-    include: {
-      articles: {
-        orderBy: { createdAt: 'desc' },
+  try {
+    const category = await prisma.category.findUnique({
+      where: { slug: slug ?? '' },
+      include: {
+        articles: {
+          orderBy: { createdAt: 'desc' },
+        },
       },
-    },
-  });
-  return category as CategoryWithArticles | null;
+    });
+
+    logServerDebug('app/category', 'Fetched category detail', {
+      slug,
+      found: Boolean(category),
+      articleCount: category?.articles?.length ?? 0,
+    });
+
+    return category as CategoryWithArticles | null;
+  } catch (error) {
+    logServerError('app/category', 'Failed to fetch category detail', error, {
+      slug,
+    });
+    throw error;
+  }
 }
 
 async function getCategories(): Promise<CategoryWithCount[]> {
-  const categories = await prisma?.category?.findMany?.({
-    orderBy: { order: 'asc' },
-    include: { _count: { select: { articles: true } } },
-  }) ?? [];
-  return categories as CategoryWithCount[];
+  try {
+    const categories = await prisma.category.findMany({
+      orderBy: { order: 'asc' },
+      include: { _count: { select: { articles: true } } },
+    });
+
+    logServerDebug('app/category', 'Fetched category sidebar list', {
+      count: categories.length,
+    });
+
+    return categories as CategoryWithCount[];
+  } catch (error) {
+    logServerError('app/category', 'Failed to fetch category sidebar list', error);
+    throw error;
+  }
 }
 
 export async function generateMetadata({ params }: CategoryPageProps) {

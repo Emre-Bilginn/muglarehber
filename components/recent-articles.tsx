@@ -1,4 +1,5 @@
 import prisma from '@/lib/db';
+import { logServerDebug, logServerError } from '@/lib/server-log';
 import ArticleCard from '@/components/article-card';
 
 interface Article {
@@ -12,12 +13,22 @@ interface Article {
 }
 
 async function getRecentArticles(): Promise<Article[]> {
-  const articles = await prisma?.article?.findMany?.({
-    include: { category: { select: { name: true, slug: true } } },
-    orderBy: { createdAt: 'desc' },
-    take: 6,
-  }) ?? [];
-  return articles as Article[];
+  try {
+    const articles = await prisma.article.findMany({
+      include: { category: { select: { name: true, slug: true } } },
+      orderBy: { createdAt: 'desc' },
+      take: 6,
+    });
+
+    logServerDebug('components/recent-articles', 'Fetched recent articles', {
+      count: articles.length,
+    });
+
+    return articles as Article[];
+  } catch (error) {
+    logServerError('components/recent-articles', 'Failed to fetch recent articles', error);
+    return [];
+  }
 }
 
 export default async function RecentArticles() {

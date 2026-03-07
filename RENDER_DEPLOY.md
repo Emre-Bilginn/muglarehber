@@ -4,20 +4,28 @@
 - Service Type: Web Service (Node)
 - Root Directory: nextjs_space
 - Recommended Node: 18 (LTS)
-- Build Command: `yarn install --frozen-lockfile && npx prisma generate && yarn build`
-- Start Command: `npx prisma migrate deploy && yarn start`
+- Build Command: `yarn install --frozen-lockfile && yarn prisma:generate && yarn build`
+- Start Command: `yarn prisma:migrate:deploy && yarn start`
+- Optional one-off seed command: `yarn prisma:seed`
 
 ## Environment Variables (keys only)
 Required:
 - DATABASE_URL
 - NEXTAUTH_URL
 - NODE_VERSION=18
- - NEXT_PUBLIC_SITE_URL=https://kesfetmugla.com
- - SITE_URL=https://kesfetmugla.com
+- NEXT_PUBLIC_SITE_URL=https://kesfetmugla.com
+- SITE_URL=https://kesfetmugla.com
+- DB_DEBUG=true (temporary, only while debugging production)
 
 Also referenced in code (optional unless you set custom build/output paths):
 - NEXT_DIST_DIR
 - NEXT_OUTPUT_MODE
+
+## Prisma Workflow
+- Production: use `prisma migrate deploy`
+- Avoid `prisma db push` in production unless this is an emergency and you knowingly accept schema drift
+- If the target database is brand new, run `yarn prisma:seed` once after migrations
+- The current `scripts/seed.ts` resets existing categories, articles, comments, and contact messages before inserting sample content
 
 ## Domain and DNS Cutover (Render + Cloudflare)
 1. Add apex and `www` domains to the Render service.
