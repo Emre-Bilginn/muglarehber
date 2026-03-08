@@ -1,12 +1,13 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import prisma from '@/lib/db';
+import { fallbackCategories, getFallbackCategory, type FallbackCategory } from '@/lib/category-fallbacks';
 import { logServerDebug, logServerError } from '@/lib/server-log';
 import AdPlaceholder from '@/components/ad-placeholder';
 import CategoryIcon from '@/components/category-icon';
 import ArticleCard from '@/components/article-card';
 
-export const dynamic = "force-dynamic";
+export const dynamic = 'force-dynamic';
 
 interface Article {
   id: string;
@@ -23,6 +24,7 @@ interface CategoryWithArticles {
   slug: string;
   description: string | null;
   icon: string | null;
+  order?: number;
   articles: Article[];
 }
 
@@ -31,11 +33,41 @@ interface CategoryWithCount {
   name: string;
   slug: string;
   icon: string | null;
+  order?: number;
   _count: { articles: number };
 }
 
 interface CategoryPageProps {
   params: { slug: string };
+}
+
+function toFallbackCategoryWithArticles(category: FallbackCategory): CategoryWithArticles {
+  return {
+    id: category.slug,
+    name: category.name,
+    slug: category.slug,
+    description: category.description,
+    icon: category.icon,
+    order: category.order,
+    articles: [],
+  };
+}
+
+function toFallbackCategoryWithCount(category: FallbackCategory): CategoryWithCount {
+  return {
+    id: category.slug,
+    name: category.name,
+    slug: category.slug,
+    icon: category.icon,
+    order: category.order,
+    _count: { articles: 0 },
+  };
+}
+
+export function generateStaticParams() {
+  return fallbackCategories.map((category) => ({
+    slug: category.slug,
+  }));
 }
 
 async function getCategory(slug: string): Promise<CategoryWithArticles | null> {
@@ -55,41 +87,59 @@ async function getCategory(slug: string): Promise<CategoryWithArticles | null> {
       articleCount: category?.articles?.length ?? 0,
     });
 
-    return category as CategoryWithArticles | null;
+    if (category) {
+      return category as CategoryWithArticles;
+    }
   } catch (error) {
     logServerError('app/category', 'Failed to fetch category detail', error, {
       slug,
     });
-    throw error;
   }
+
+  const fallbackCategory = getFallbackCategory(slug);
+  return fallbackCategory ? toFallbackCategoryWithArticles(fallbackCategory) : null;
 }
 
 async function getCategories(): Promise<CategoryWithCount[]> {
   try {
-    const categories = await prisma.category.findMany({
+    const categories = (await prisma.category.findMany({
       orderBy: { order: 'asc' },
       include: { _count: { select: { articles: true } } },
-    });
+    })) as CategoryWithCount[];
+
+    const mergedCategories = new Map<string, CategoryWithCount>();
+
+    for (const category of fallbackCategories) {
+      mergedCategories.set(category.slug, toFallbackCategoryWithCount(category));
+    }
+
+    for (const category of categories) {
+      mergedCategories.set(category.slug, category);
+    }
+
+    const resolvedCategories = [...mergedCategories.values()].sort(
+      (left, right) => (left.order ?? 999) - (right.order ?? 999),
+    );
 
     logServerDebug('app/category', 'Fetched category sidebar list', {
-      count: categories.length,
+      count: resolvedCategories.length,
     });
 
-    return categories as CategoryWithCount[];
+    return resolvedCategories;
   } catch (error) {
     logServerError('app/category', 'Failed to fetch category sidebar list', error);
-    throw error;
+    return fallbackCategories.map(toFallbackCategoryWithCount);
   }
 }
 
 export async function generateMetadata({ params }: CategoryPageProps) {
   const category = await getCategory(params?.slug ?? '');
   if (!category) {
-    return { title: 'Kategori Bulunamadı - Muğla Rehber' };
+    return { title: 'Kategori Bulunamadi - Mugla Rehber' };
   }
   return {
-    title: `${category?.name ?? ''} - Muğla Rehber`,
-    description: category?.description ?? `Muğla bölgesinde ${category?.name ?? ''} hakkında bilgiler.`,
+    title: `${category?.name ?? ''} - Mugla Rehber`,
+    description: category?.description ?? `Mugla bolgesinde ${category?.name ?? ''} hakkinda bilgiler.`,
   };
 }
 
@@ -107,7 +157,6 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
   return (
     <div className="pt-16">
-      {/* Header */}
       <section className="bg-gradient-hero text-white py-12">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex items-center gap-4">
@@ -124,13 +173,15 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
-          {/* Main Content */}
           <div className="flex-1">
             <AdPlaceholder size="banner" className="mb-6" />
 
             {(articles?.length ?? 0) === 0 ? (
               <div className="text-center py-12 bg-gray-50 rounded-xl">
-                <p className="text-gray-500">Bu kategoride henüz makale bulunmuyor.</p>
+                <p className="text-gray-500">
+                  Bu kategori icin henuz icerik bulunmuyor. Ilgili sayfa artik 404 vermiyor; veri eklendiginde
+                  icerikler burada listelenecek.
+                </p>
               </div>
             ) : (
               <div className="space-y-6">
@@ -151,26 +202,27 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             )}
           </div>
 
-          {/* Sidebar */}
           <aside className="w-full lg:w-72 space-y-6">
             <AdPlaceholder size="sidebar" />
 
             <div className="bg-white rounded-xl shadow-md p-5">
-              <h3 className="font-bold text-gray-900 mb-4">Diğer Kategoriler</h3>
+              <h3 className="font-bold text-gray-900 mb-4">Diger Kategoriler</h3>
               <div className="space-y-2">
-                {allCategories?.filter?.((c: CategoryWithCount) => c?.slug !== params?.slug)?.map?.((cat: CategoryWithCount) => (
-                  <Link
-                    key={cat?.id ?? ''}
-                    href={`/kategori/${cat?.slug ?? ''}`}
-                    className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors"
-                  >
-                    <div className="flex items-center gap-2">
-                      <CategoryIcon icon={cat?.icon ?? ''} className="w-4 h-4 text-sky-500" />
-                      <span className="text-sm text-gray-700">{cat?.name ?? ''}</span>
-                    </div>
-                    <span className="text-xs text-gray-400">{cat?._count?.articles ?? 0}</span>
-                  </Link>
-                )) ?? null}
+                {allCategories
+                  ?.filter?.((categoryItem: CategoryWithCount) => categoryItem?.slug !== params?.slug)
+                  ?.map?.((cat: CategoryWithCount) => (
+                    <Link
+                      key={cat?.id ?? ''}
+                      href={`/kategori/${cat?.slug ?? ''}`}
+                      className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                    >
+                      <div className="flex items-center gap-2">
+                        <CategoryIcon icon={cat?.icon ?? ''} className="w-4 h-4 text-sky-500" />
+                        <span className="text-sm text-gray-700">{cat?.name ?? ''}</span>
+                      </div>
+                      <span className="text-xs text-gray-400">{cat?._count?.articles ?? 0}</span>
+                    </Link>
+                  )) ?? null}
               </div>
             </div>
           </aside>
