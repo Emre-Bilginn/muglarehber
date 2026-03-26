@@ -135,11 +135,11 @@ async function getCategories(): Promise<CategoryWithCount[]> {
 export async function generateMetadata({ params }: CategoryPageProps) {
   const category = await getCategory(params?.slug ?? '');
   if (!category) {
-    return { title: 'Kategori Bulunamadi - Mugla Rehber' };
+    return { title: 'Kategori Bulunamadı - Keşfet Muğla' };
   }
   return {
-    title: `${category?.name ?? ''} - Mugla Rehber`,
-    description: category?.description ?? `Mugla bolgesinde ${category?.name ?? ''} hakkinda bilgiler.`,
+    title: `${category?.name ?? ''} - Keşfet Muğla`,
+    description: category?.description ?? `Muğla bölgesinde ${category?.name ?? ''} hakkında bilgiler.`,
   };
 }
 
@@ -179,8 +179,8 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             {(articles?.length ?? 0) === 0 ? (
               <div className="text-center py-12 bg-gray-50 rounded-xl">
                 <p className="text-gray-500">
-                  Bu kategori icin henuz icerik bulunmuyor. Ilgili sayfa artik 404 vermiyor; veri eklendiginde
-                  icerikler burada listelenecek.
+                  Bu kategori için henüz içerik bulunmuyor. İlgili sayfa artık 404 vermiyor; veri eklendiğinde
+                  içerikler burada listelenecek.
                 </p>
               </div>
             ) : (
@@ -206,7 +206,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             <AdPlaceholder size="sidebar" />
 
             <div className="bg-white rounded-xl shadow-md p-5">
-              <h3 className="font-bold text-gray-900 mb-4">Diger Kategoriler</h3>
+              <h3 className="font-bold text-gray-900 mb-4">Diğer Kategoriler</h3>
               <div className="space-y-2">
                 {allCategories
                   ?.filter?.((categoryItem: CategoryWithCount) => categoryItem?.slug !== params?.slug)

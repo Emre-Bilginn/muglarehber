@@ -52,26 +52,40 @@ async function getArticle(slug: string): Promise<Article | null> {
       articleId: article?.id ?? null,
     });
 
-    if (article) {
-      await prisma.article
-        .update({
-          where: { id: article?.id ?? '' },
-          data: { viewCount: (article?.viewCount ?? 0) + 1 },
-        })
-        .catch((error) => {
-          logServerError('app/article', 'Failed to increment article view count', error, {
-            slug,
-            articleId: article.id,
-          });
-        });
-    }
-
     return article as Article | null;
   } catch (error) {
     logServerError('app/article', 'Failed to fetch article detail', error, {
       slug,
     });
     throw error;
+  }
+}
+
+async function incrementArticleViewCount(articleId: string): Promise<number | null> {
+  try {
+    const updatedArticle = await prisma.article.update({
+      where: { id: articleId ?? '' },
+      data: {
+        viewCount: {
+          increment: 1,
+        },
+      },
+      select: {
+        viewCount: true,
+      },
+    });
+
+    logServerDebug('app/article', 'Incremented article view count', {
+      articleId,
+      viewCount: updatedArticle.viewCount,
+    });
+
+    return updatedArticle.viewCount;
+  } catch (error) {
+    logServerError('app/article', 'Failed to increment article view count', error, {
+      articleId,
+    });
+    return null;
   }
 }
 
@@ -131,10 +145,14 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     notFound();
   }
 
-  const relatedArticles = await getRelatedArticles(article?.categoryId ?? '', article?.id ?? '');
+  const [relatedArticles, updatedViewCount] = await Promise.all([
+    getRelatedArticles(article?.categoryId ?? '', article?.id ?? ''),
+    incrementArticleViewCount(article?.id ?? ''),
+  ]);
   const highlights = article?.highlights ?? [];
   const content = article?.content ?? '';
   const paragraphs = content?.split?.('\n\n')?.filter?.((p: string) => p?.trim?.()) ?? [];
+  const viewCount = updatedViewCount ?? article?.viewCount ?? 0;
 
   return (
     <div className="pt-16">
@@ -173,7 +191,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               </span>
               <span className="flex items-center gap-1">
                 <Eye className="w-4 h-4" />
-                {article?.viewCount ?? 0} görüntülenme
+                {viewCount} görüntülenme
               </span>
             </div>
           </div>

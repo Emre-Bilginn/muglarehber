@@ -12,6 +12,7 @@ const manrope = Manrope({
   weight: ["400", "500", "600", "700"],
   variable: "--font-sans",
 });
+
 const fraunces = Fraunces({
   subsets: ["latin"],
   weight: ["600", "700"],
@@ -44,8 +45,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "KeÅŸfet MuÄŸla - MuÄŸla Gezi ve Turizm Rehberi",
-    description: "MuÄŸla bÃ¶lgesinin en kapsamlÄ± gezi rehberi",
+    title: "Keşfet Muğla - Muğla Gezi ve Turizm Rehberi",
+    description: "Muğla bölgesinin en kapsamlı gezi rehberi",
     images: ["/og-image.png"],
   },
   icons: {
@@ -53,7 +54,7 @@ export const metadata: Metadata = {
     shortcut: "/favicon.svg",
   },
 
-  // ✅ AdSense site doğrulama (Meta etiket yöntemi)
+  // ✅ AdSense doğrulama
   other: {
     "google-adsense-account": "ca-pub-9872386753585488",
   },
@@ -67,13 +68,28 @@ export default function RootLayout({
   return (
     <html lang="tr">
       <body className={`${manrope.variable} ${fraunces.variable} font-sans`}>
-        {/* ✅ AdSense script (reklam göstermek için) */}
+
+        {/* ✅ AdSense */}
         <Script
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9872386753585488"
           strategy="afterInteractive"
           async
           crossOrigin="anonymous"
         />
+
+        {/* 🔥 Google Analytics */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-SKR8WPDV78"
+          strategy="afterInteractive"
+        />
+        <Script id="ga-script" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-SKR8WPDV78');
+          `}
+        </Script>
 
         <Header />
         <main className="min-h-screen">{children}</main>

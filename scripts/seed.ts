@@ -200,6 +200,90 @@ const articles = [
     categorySlug: 'ulasim-rehberi',
     isFeatured: false,
   },
+  {
+    title: 'Datça Yarımadası ve Knidos Antik Kenti',
+    slug: 'datca-yarimadasi-knidos-antik-kenti',
+    summary: 'Eski Datça sokaklarından Knidos’un rüzgarlı tepesine uzanan bu rota, sakinlik arayanlar için Muğla’nın en özel yüzlerinden birini gösterir.',
+    content: `Datça Yarımadası, Muğla’nın en karakterli rotalarından biridir. Yol boyunca karşılaştığınız virajlı manzaralar, badem ağaçları, taş evler ve bir anda açılan derin mavi koylar, daha ilçeye varmadan tatilin temposunu düşürür. Datça’yı özel yapan şey, büyük tatil merkezlerinin gürültüsünden uzak kalıp sade bir Ege ritmini koruyabilmesidir.\n\nİlçe merkezinde deniz kenarında yürüyüş yapabilir, küçük butikleri ve kahve duraklarını keşfedebilir, ardından Eski Datça’ya geçerek taş sokaklarda sakin bir rota izleyebilirsiniz. Eski Datça’da begonvillerle çevrili avlular, sanat atölyeleri ve yerel ürünler satan küçük dükkanlar öne çıkar.\n\nYarımadanın en etkileyici durağı ise hiç kuşkusuz Knidos Antik Kenti’dir. Datça’nın en ucunda, Ege ile Akdeniz’in kesiştiği noktada yer alan Knidos; iki limanı, tiyatrosu, teraslı yerleşimi ve gün batımı manzarasıyla benzersizdir. Özellikle akşamüstü saatlerinde antik kentin taşları arasında dolaşmak, bu bölgenin tarih ve manzara gücünü aynı anda hissettirir.\n\nKnidos’a giderken yolu bir gezi deneyiminin parçası gibi düşünmek gerekir. Palamutbükü, Mesudiye ve Ovabükü gibi duraklarla günü parçalayıp deniz molaları verebilir, dönüşte Datça merkezde yavaş bir akşam yemeğiyle rotayı tamamlayabilirsiniz.`,
+    imageUrl: null,
+    gpsLat: 36.6926,
+    gpsLng: 27.3763,
+    highlights: ['Eski Datça’da taş sokaklar ve butik duraklar', 'Ege ile Akdeniz’in birleştiği uç noktada Knidos', 'Antik tiyatro ve çift liman kalıntıları', 'Yol boyunca koy koy ilerleyen manzaralı rota', 'Gün batımı için Muğla’daki en güçlü noktalardan biri'],
+    categorySlug: 'gezilecek-yerler',
+    isFeatured: false,
+  },
+  {
+    title: 'Datça\'nın En Güzel Koyları',
+    slug: 'datcanin-en-guzel-koylari',
+    summary: 'Uzun kumsallar, cam gibi su ve kalabalıktan uzak yüzme molaları arıyorsanız Datça koyları Muğla’nın en güçlü alternatiflerinden biridir.',
+    content: `Datça kıyıları, büyük beach club kalabalıklarından çok daha sakin ve doğal bir deniz deneyimi sunar. Buradaki koyların çoğunda su oldukça berraktır; kıyı yapısı ise bir yerde uzun kumsal, başka bir yerde çakıllı ve sessiz bir cep şeklinde karşınıza çıkar. Bu çeşitlilik, Datça’yı aynı gün içinde farklı deniz karakterleri yaşamak isteyenler için ideal hale getirir.\n\n**Palamutbükü**, Datça denince ilk akla gelen duraklardan biridir. Uzun sahil şeridi, temiz suyu ve sahil boyunca dizilen işletmeleriyle gün boyu konforlu vakit geçirmek isteyenler için uygundur. Daha sakin bir alternatif arayanlar ise **Ovabükü** ve **Hayıtbükü** tarafında daha küçük ölçekte, daha yerel bir atmosfer bulabilir.\n\nMerkeze daha yakın bir deniz molası için **Kargı Koyu** öne çıkar. Kısa sürüşle ulaşılması kolaydır ve özellikle sabah saatlerinde oldukça huzurludur. Şnorkelle yüzmeyi sevenler için berrak su yapısı önemli bir avantajdır. Tekne turuyla keşfedilen daha küçük koylar ise Datça’nın en bakir yüzünü gösterir.\n\nBu bölgede en iyi deneyim için tek bir plaja kapanmak yerine koy koy ilerleyen yarım günlük veya tam günlük rota yapmak daha doğru olur. Yanınıza deniz ayakkabısı almak, sabah erken çıkmak ve gün batımına yakın daha sakin bir koyda mola vermek Datça sahillerinden alacağınız keyfi belirgin şekilde artırır.`,
+    imageUrl: null,
+    gpsLat: 36.7197,
+    gpsLng: 27.6842,
+    highlights: ['Palamutbükü’nde uzun ve konforlu sahil hattı', 'Ovabükü ve Hayıtbükü’nde daha sakin atmosfer', 'Kargı Koyu’nda merkeze yakın deniz molası', 'Şnorkel için uygun berrak su yapısı', 'Aynı gün içinde birkaç koy gezmeye uygun yarımada rotası'],
+    categorySlug: 'plajlar',
+    isFeatured: false,
+  },
+  {
+    title: 'Akyaka ve Datça\'da Yerel Lezzet Durakları',
+    slug: 'akyaka-datca-yerel-lezzet-duraklari',
+    summary: 'Azmak kıyısında kahvaltıdan Datça bademine uzanan bu rota, Muğla mutfağını sadece manzarayla değil yerel malzemeyle de tanımak isteyenler için iyi bir başlangıçtır.',
+    content: `Akyaka ve Datça, yeme içme konusunda gösterişli değil ama karakterli seçenekler sunan iki farklı rota gibidir. Akyaka’da su kenarına yayılan sakin masa düzeni, Datça’da ise küçük üreticilerin ve yerel malzemenin öne çıktığı daha yavaş bir mutfak kültürü dikkat çeker.\n\nAkyaka tarafında sabah saatleri özellikle keyiflidir. Azmak Nehri çevresindeki kahvaltı mekanları, serin su manzarası eşliğinde uzun oturmaya uygundur. Günün ilerleyen saatlerinde nehir kenarı veya sahil tarafındaki balık restoranları öne çıkar. Izgara levrek, kalamar, otlu mezeler ve zeytinyağlı başlangıçlar bölgenin standart ama güçlü seçenekleridir.\n\nDatça’da ise badem, zeytinyağı, bal ve yöresel reçeller yalnızca hediyelik değil, menülerin de karakterini belirler. Eski Datça çevresindeki küçük kafelerde bademli tatlılar, ev yapımı limonatalar ve üçüncü nesil kahve durakları öne çıkar. Akşam saatlerinde sahil hattındaki restoranlarda taze balık ve Ege mezeleri daha baskın hale gelir.\n\nBu iki bölgeyi birlikte düşünenler için en iyi yaklaşım, Akyaka’da manzaralı bir kahvaltı ya da hafif öğle yemeği planlayıp Datça tarafında daha uzun bir akşam yemeği deneyimi yaşamaktır. Böylece hem Gökova’nın sakin su kenarı atmosferini hem de Datça’nın daha yerel ve üretim odaklı mutfağını aynı tatilde görmüş olursunuz.`,
+    imageUrl: null,
+    gpsLat: 37.0541,
+    gpsLng: 28.3242,
+    highlights: ['Azmak kıyısında sakin kahvaltı durakları', 'Akyaka’da balık ve zeytinyağlı ağırlıklı menüler', 'Datça’da badem, bal ve yerel üretici ürünleri', 'Eski Datça çevresinde küçük kafe ve tatlı durakları', 'Manzara ve malzeme kalitesini birleştiren yavaş yemek deneyimi'],
+    categorySlug: 'restoranlar-kafeler',
+    isFeatured: false,
+  },
+  {
+    title: 'Akyaka ve Gökova\'da Nerede Kalınır?',
+    slug: 'akyaka-gokovada-nerede-kalinir',
+    summary: 'Sakin merkez otelleri, kite odaklı sahil konaklamaları ve doğaya yakın küçük tesisler arasında seçim yaparken Akyaka ile Gökova’nın farklı karakterlerini iyi ayırmak gerekir.',
+    content: `Akyaka ve Gökova çevresi, Bodrum ya da Fethiye kadar büyük ölçekli konaklama çeşitliliğine sahip olmasa da daha seçilmiş ve dingin alternatifler sunar. Buraya gelenlerin çoğu yüksek tempolu tatilden çok yavaşlamak, doğaya yakın olmak ve denizle günlük hayat arasında kısa mesafeler bırakmak ister.\n\nAkyaka merkezde konaklamak isteyenler için butik oteller ve apartlar öne çıkar. Restoranlara, sahile ve Azmak çevresine yürüyerek ulaşabilmek büyük avantajdır. Özellikle arabayı mümkün olduğunca az kullanmak isteyen çiftler ve kısa hafta sonu kaçamakları için merkez hattı mantıklı bir tercihtir.\n\nRüzgar sporlarıyla ilgilenenler ise Akçapınar tarafındaki konaklamalara daha yakındır. Buradaki tesisler genellikle daha sade ama aktivite odaklıdır. Sabah erkenden kite veya rüzgar sörfüne çıkmak isteyenler için lokasyon farkı belirgin şekilde hissedilir.\n\nDaha sessiz ve doğa içinde bir tatil arayanlar, Gökova Körfezi çevresindeki küçük pansiyonlar, taş evler ya da bungalov konseptli tesislere yönelebilir. Bu tarz konaklamalarda manzara ve sakinlik artar; ancak akşam yemekleri ve market erişimi için araç avantaj haline gelir. Rezervasyon yaparken manzara kadar ulaşım kolaylığını da mutlaka hesaba katmak gerekir.`,
+    imageUrl: null,
+    gpsLat: 37.0553,
+    gpsLng: 28.3227,
+    highlights: ['Akyaka merkezde yürünebilir butik otel seçenekleri', 'Akçapınar tarafında spor odaklı konaklamalar', 'Gökova çevresinde daha sessiz pansiyon ve bungalovlar', 'Kısa kaçamaklar için merkez hattı avantajı', 'Rezervasyonda manzara kadar ulaşım kolaylığı da önemli'],
+    categorySlug: 'oteller-konaklama',
+    isFeatured: false,
+  },
+  {
+    title: 'Akyaka Azmak Nehri ve Gökova Doğa Rotaları',
+    slug: 'akyaka-azmak-gokova-doga-rotalari',
+    summary: 'Serin nehir gezileri, kıyı yürüyüşleri ve rüzgar sporlarıyla Akyaka çevresi, deniz tatilini aktif bir rota ile birleştirmek isteyenler için çok güçlüdür.',
+    content: `Akyaka’nın en ayırt edici noktası, kısa mesafelerde birbirinden çok farklı doğa deneyimleri sunabilmesidir. Sabah buz gibi Azmak Nehri kıyısında yürüyebilir, öğleden sonra kite surf yapanları izleyebilir ya da doğrudan sahaya çıkabilir, akşamüstü ise tepeden körfezi gören sakin bir manzara noktasına geçebilirsiniz.\n\n**Azmak Nehri** çevresi, bölgenin en kolay ama en etkileyici deneyimlerinden birini sunar. Kısa tekne turları, kano ve nehir kenarı yürüyüşleri özellikle yaz sıcağında çok keyiflidir. Su o kadar berraktır ki nehir yatağını izlemek bile başlı başına bir aktiviteye dönüşür.\n\nAktif tarafı güçlendirmek isteyenler için **Akçapınar** rüzgar sporlarının merkezidir. Uygun hava koşullarında kite surf ve benzeri su sporları için son derece hareketli bir sahne oluşur. Daha sakin rota arayanlar ise çevredeki patikaları, bisiklet yollarını ve Sakartepe gibi seyir noktalarını değerlendirebilir.\n\nGünü tekne turuyla tamamlamak isteyenler için Gökova Körfezi çevresindeki kısa mavi yolculuk rotaları da güçlü bir alternatiftir. Böylece nehir, körfez ve kıyı doğasını tek bir seyahat içinde farklı tempolarda deneyimlemek mümkün olur.`,
+    imageUrl: null,
+    gpsLat: 37.0547,
+    gpsLng: 28.3240,
+    highlights: ['Azmak Nehri’nde tekne, kano ve yürüyüş', 'Akçapınar’da rüzgar sporları için uygun alanlar', 'Sakartepe ve çevresinde manzaralı kısa rotalar', 'Bisiklet ve sahil yürüyüşü için dengeli parkurlar', 'Gökova Körfezi’nde günübirlik tekne rotalarıyla birleşen program'],
+    categorySlug: 'aktiviteler',
+    isFeatured: false,
+  },
+  {
+    title: 'Selimiye ve Bozburun\'da Sakin Akşamlar',
+    slug: 'selimiye-bozburunda-sakin-aksamlar',
+    summary: 'Yüksek sesli kulüpler yerine deniz kenarında uzun sofralar ve loş sahil yürüyüşleri arıyorsanız Selimiye ile Bozburun gece hayatına daha dingin bir alternatif sunar.',
+    content: `Muğla gece hayatı dendiğinde çoğu kişinin aklına önce Bodrum ya da Marmaris gelir; ancak her tatil eğlenceyi yüksek ses ve kalabalıkla eşitlemek zorunda değildir. Selimiye ve Bozburun, akşam saatlerini daha yavaş ve manzaraya dönük yaşamak isteyenler için çok daha uygun bir çizgi sunar.\n\nSelimiye’de gün batımıyla birlikte sahil hattı hareketlenir ama tempo hiçbir zaman aceleci değildir. Küçük restoranlarda uzun meze sofraları kurulur, denize sıfır masalarda hafif müzik eşlik eder ve akşam genellikle yürüyüşle devam eder. Burası daha çok sohbet, gün batımı ve sakin servis kalitesiyle öne çıkar.\n\nBozburun ise biraz daha dağınık ama bir o kadar da karakterli bir akşam atmosferine sahiptir. Tekne turundan dönenler liman çevresinde toplanır, küçük balık restoranları dolmaya başlar ve gece ilerledikçe kalabalık yerine sessizlik baskın hale gelir. Özellikle çiftler ve kafa dinlemek isteyenler için bu büyük avantajdır.\n\nEğer tatilde tek beklentiniz kulüp değil de iyi yemek, güçlü manzara ve sakin bir ritimse Selimiye ile Bozburun, Muğla’nın en rafine akşam rotalarından biri haline gelir.`,
+    imageUrl: null,
+    gpsLat: 36.7161,
+    gpsLng: 28.0918,
+    highlights: ['Kulüp yerine uzun akşam yemeği odaklı atmosfer', 'Selimiye’de deniz kenarında sakin meze sofraları', 'Bozburun’da liman çevresinde düşük tempolu akşamlar', 'Çiftler ve kafa dinlemek isteyenler için güçlü alternatif', 'Gün batımı manzarasıyla öne çıkan sessiz sahil rotaları'],
+    categorySlug: 'gece-hayati',
+    isFeatured: false,
+  },
+  {
+    title: 'Dalaman ve Milas-Bodrum Havalimanı Transfer Rehberi',
+    slug: 'dalaman-milas-bodrum-havalimani-transfer-rehberi',
+    summary: 'Muğla tatilinde doğru havalimanını seçmek ve son transfer ayağını iyi planlamak, seyahatin konforunu doğrudan etkiler.',
+    content: `Muğla geniş bir coğrafyaya yayıldığı için uçak biletini almadan önce nereye gideceğinizi netleştirmek gerekir. Genel kural basittir: Bodrum ve çevresi için Milas-Bodrum Havalimanı, Fethiye, Ölüdeniz, Dalyan, Marmaris ve Göcek hattı için ise Dalaman Havalimanı daha pratik bir başlangıç noktasıdır.\n\nHavalimanından sonra en sık kullanılan seçenekler shuttle servisler, özel transfer araçları, araç kiralama ve sezon dönemlerinde artan paylaşımlı ulaşım çözümleridir. Eğer konaklama yeriniz merkezdeyse servisler bütçe açısından avantajlı olabilir. Gece geç saatte iniş yapıyorsanız veya doğrudan küçük bir koya geçecekseniz özel transfer daha az yorucu bir seçenek haline gelir.\n\nAraç kiralama, özellikle aynı tatilde birden fazla belde gezmeyi planlayanlar için en esnek yöntemdir. Bodrum yarımadasında farklı koylar arasında, Fethiye çevresinde ise Saklıkent, Kayaköy, Faralya gibi noktalara geçerken ciddi rahatlık sağlar. Buna karşılık yalnızca tek bir merkezde kalacaksanız araç her zaman şart değildir.\n\nTransfer planını yaparken yalnızca fiyat değil, varış saati, bagaj durumu, çocuklu seyahat ve konaklama noktasının yol yapısı da düşünülmelidir. Doğru kombinasyon seçildiğinde Muğla’da ilk gününüz yolda geçmek yerine doğrudan tatil ritmine girebilir.`,
+    imageUrl: null,
+    gpsLat: 36.7131,
+    gpsLng: 28.7925,
+    highlights: ['Bodrum hattı için Milas-Bodrum, güney hat için Dalaman daha pratik', 'Shuttle, özel transfer ve araç kiralama arasında net tercih yapma', 'Gece inişi ve küçük koy konaklamalarında özel transfer avantajı', 'Birden fazla belde gezilecekse araç kiralama esneklik sağlar', 'Transfer planında sadece fiyat değil varış koşulları da önemli'],
+    categorySlug: 'ulasim-rehberi',
+    isFeatured: false,
+  },
 ];
 
 async function main() {
@@ -237,20 +321,107 @@ async function main() {
 
   // Add some sample comments
   const sampleComments = [
-    { name: 'Ahmet Yılmaz', email: 'ahmet@example.com', content: 'Harika bir rehber olmuş, çok teşekkürler!' },
-    { name: 'Zeynep Kaya', email: 'zeynep@example.com', content: 'Geçen yaz Bodrum\'a gittik, bu bilgiler çok işimize yaradı.' },
-    { name: 'Mehmet Demir', email: 'mehmet@example.com', content: 'Fethiye planlarımız için çok faydalı oldu.' },
+    {
+      articleSlug: 'bodrum-kalesi-sualti-arkeoloji-muzesi',
+      name: 'Ahmet Yilmaz',
+      email: 'ahmet@example.com',
+      content: 'Harika bir rehber olmus, ozellikle muze bolumu gezi plani yaparken cok isime yaradi.',
+    },
+    {
+      articleSlug: 'oludeniz-mavi-lagun',
+      name: 'Zeynep Kaya',
+      email: 'zeynep@example.com',
+      content: 'Gecen yaz Oludeniz\'e gitmistik, lagun kismi tam anlatildigi gibiydi.',
+    },
+    {
+      articleSlug: 'mugla-su-sporlari-tekne-turlari',
+      name: 'Mehmet Demir',
+      email: 'mehmet@example.com',
+      content: 'Tekne turu seceneklerini tek yerde gormek plan yapmayi baya kolaylastirdi.',
+    },
+    {
+      articleSlug: 'datca-yarimadasi-knidos-antik-kenti',
+      name: 'Elif Acar',
+      email: 'elif@example.com',
+      content: 'Knidos icin gun batimi onerisi cok dogru; biz de o saatte gidip en keyifli halini gorduk.',
+    },
+    {
+      articleSlug: 'akyaka-azmak-gokova-doga-rotalari',
+      name: 'Burak Sen',
+      email: 'burak@example.com',
+      content: 'Akyaka tarafina ilk kez gidecegiz, ozellikle Azmak ve Sakartepe kismini not aldim.',
+    },
+    {
+      articleSlug: 'dalaman-milas-bodrum-havalimani-transfer-rehberi',
+      name: 'Seda Turkmen',
+      email: 'seda@example.com',
+      content: 'Havalimani secimi konusunda kafam cok karisikti, ozet net olmus.',
+    },
   ];
 
-  const articlesForComments = await prisma.article.findMany({ take: 3 });
-  for (let i = 0; i < articlesForComments.length; i++) {
+  const commentTargetSlugs = sampleComments.map((comment) => comment.articleSlug);
+  const commentArticles = await prisma.article.findMany({
+    where: {
+      slug: {
+        in: commentTargetSlugs,
+      },
+    },
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+    },
+  });
+  const commentArticleMap = new Map(
+    commentArticles.map((article) => [article.slug, article]),
+  );
+
+  for (const comment of sampleComments) {
+    const targetArticle = commentArticleMap.get(comment.articleSlug);
+    if (!targetArticle) {
+      console.warn(`Skipped comment, article not found: ${comment.articleSlug}`);
+      continue;
+    }
+
+    const { articleSlug, ...commentData } = comment;
     await prisma.comment.create({
       data: {
-        ...sampleComments[i],
-        articleId: articlesForComments[i].id,
+        ...commentData,
+        articleId: targetArticle.id,
       },
     });
-    console.log(`Created comment for: ${articlesForComments[i].title}`);
+    console.log(`Created comment for: ${targetArticle.title}`);
+  }
+
+  const sampleContactMessages = [
+    {
+      name: 'Can Yildirim',
+      email: 'can@example.com',
+      subject: 'Dalaman transferi',
+      message: 'Gece inisli Dalaman ucusundan sonra Oludeniz tarafina en rahat ulasim secenegi hangisi olur?',
+      isRead: false,
+    },
+    {
+      name: 'Derya Koc',
+      email: 'derya@example.com',
+      subject: 'Datca aile tatili',
+      message: 'Haziran sonunda cocuklu aile icin Datca merkez mi yoksa Palamutbuku tarafi mi daha uygun olur diye arastiriyorum.',
+      isRead: false,
+    },
+    {
+      name: 'Mert Ozkan',
+      email: 'mert@example.com',
+      subject: 'Gokova tekne rotalari',
+      message: 'Kalabalik olmayan Gokova tekne turlari ve kisa mavi yolculuk onerileri hakkinda da icerik bekliyorum.',
+      isRead: true,
+    },
+  ];
+
+  for (const message of sampleContactMessages) {
+    const createdMessage = await prisma.contactMessage.create({
+      data: message,
+    });
+    console.log(`Created contact message: ${createdMessage.subject}`);
   }
 
   console.log('Seed completed!');
