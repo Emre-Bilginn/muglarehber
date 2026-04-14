@@ -1,146 +1,142 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Search, X, Loader2 } from 'lucide-react';
-import Link from 'next/link';
-import ImageWithFallback from './image-with-fallback';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Loader2, Search, X } from "lucide-react";
+import ImageWithFallback from "@/components/image-with-fallback";
 
-interface SearchResult {
-  id: string;
-  title: string;
+type SearchResult = {
   slug: string;
-  summary: string;
-  imageUrl: string | null;
+  title: string;
+  excerpt: string;
+  image: string;
+  imageAlt: string;
   category: { name: string; slug: string };
-}
+};
 
-interface SearchModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
-  const [query, setQuery] = useState('');
+export default function SearchModal() {
+  const [isOpen, setIsOpen] = useState(false);
+  const [query, setQuery] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const searchArticles = async () => {
-      if ((query?.length ?? 0) < 2) {
-        setResults([]);
-        return;
-      }
+    if (!isOpen) {
+      document.body.classList.remove("overflow-hidden");
+      setQuery("");
+      setResults([]);
+      return;
+    }
+
+    document.body.classList.add("overflow-hidden");
+    return () => document.body.classList.remove("overflow-hidden");
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (query.trim().length < 2) {
+      setResults([]);
+      return;
+    }
+
+    const timeout = window.setTimeout(async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(query ?? '')}`);
-        const data = await res?.json?.();
-        setResults(data?.articles ?? []);
-      } catch (error) {
-        console.error('Search error:', error);
-        setResults([]);
+        const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
+        const data = await response.json();
+        setResults(data.articles ?? []);
       } finally {
         setLoading(false);
       }
-    };
+    }, 250);
 
-    const debounce = setTimeout(searchArticles, 300);
-    return () => clearTimeout(debounce);
+    return () => window.clearTimeout(timeout);
   }, [query]);
 
-  useEffect(() => {
-    if (isOpen) {
-      document?.body?.classList?.add?.('overflow-hidden');
-    } else {
-      document?.body?.classList?.remove?.('overflow-hidden');
-      setQuery('');
-      setResults([]);
-    }
-  }, [isOpen]);
-
-  if (!isOpen) return null;
-
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm"
-        onClick={onClose}
+    <>
+      <button
+        type="button"
+        onClick={() => setIsOpen(true)}
+        className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 hover:border-slate-300 hover:text-slate-900"
+        aria-label="Sitede arama yap"
       >
-        <motion.div
-          initial={{ opacity: 0, y: -50 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -50 }}
-          className="max-w-2xl mx-auto mt-20 mx-4"
-          onClick={(e) => e?.stopPropagation?.()}
-        >
-          <div className="bg-white rounded-xl shadow-2xl overflow-hidden">
-            <div className="flex items-center gap-3 p-4 border-b">
-              <Search className="w-5 h-5 text-gray-400" />
+        <Search className="h-4 w-4" />
+        <span className="hidden sm:inline">Muğla içinde ara</span>
+      </button>
+
+      {isOpen ? (
+        <div className="fixed inset-0 z-[80] bg-slate-950/55 px-4 py-12 backdrop-blur-sm">
+          <div className="mx-auto max-w-3xl overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-2xl">
+            <div className="flex items-center gap-3 border-b border-slate-200 px-5 py-4">
+              <Search className="h-5 w-5 text-slate-400" />
               <input
-                type="text"
-                placeholder="Makale, yer veya aktivite ara..."
-                value={query ?? ''}
-                onChange={(e) => setQuery(e?.target?.value ?? '')}
-                className="flex-1 outline-none text-lg"
+                type="search"
                 autoFocus
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Makale, ilçe, plaj veya rota ara"
+                className="flex-1 border-0 bg-transparent text-base text-slate-900 outline-none placeholder:text-slate-400"
               />
-              <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
-                <X className="w-5 h-5 text-gray-500" />
+              <button
+                type="button"
+                onClick={() => setIsOpen(false)}
+                className="rounded-full p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                aria-label="Aramayı kapat"
+              >
+                <X className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="max-h-[60vh] overflow-y-auto">
-              {loading && (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="w-6 h-6 text-sky-500 animate-spin" />
+            <div className="max-h-[70vh] overflow-y-auto p-4">
+              {loading ? (
+                <div className="flex min-h-[180px] items-center justify-center">
+                  <Loader2 className="h-6 w-6 animate-spin text-sky-700" />
                 </div>
-              )}
-
-              {!loading && (results?.length ?? 0) > 0 && (
-                <div className="p-2">
-                  {results?.map?.((result) => (
+              ) : query.trim().length < 2 ? (
+                <div className="rounded-[1.5rem] bg-slate-50 px-6 py-10 text-center text-sm leading-7 text-slate-500">
+                  En az 2 karakter yazarak rehberler içinde arama yapabilirsiniz.
+                </div>
+              ) : results.length === 0 ? (
+                <div className="rounded-[1.5rem] bg-slate-50 px-6 py-10 text-center text-sm leading-7 text-slate-500">
+                  Aramanızla eşleşen bir içerik bulunamadı.
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {results.map((result) => (
                     <Link
-                      key={result?.id ?? ''}
-                      href={`/makale/${result?.slug ?? ''}`}
-                      onClick={onClose}
-                      className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors"
+                      key={result.slug}
+                      href={`/makale/${result.slug}`}
+                      onClick={() => setIsOpen(false)}
+                      className="grid gap-4 rounded-[1.5rem] border border-slate-200 p-4 hover:border-sky-200 hover:bg-sky-50/40 md:grid-cols-[140px_1fr]"
                     >
-                      <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                      <div className="relative aspect-[4/3] overflow-hidden rounded-[1rem] bg-slate-100">
                         <ImageWithFallback
-                          src={result?.imageUrl ?? undefined}
-                          alt={result?.title ?? ''}
+                          src={result.image}
+                          alt={result.imageAlt}
                           fill
-                          sizes="64px"
+                          sizes="140px"
                           className="object-cover"
                         />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-900 truncate">{result?.title ?? ''}</p>
-                        <p className="text-sm text-sky-600">{result?.category?.name ?? ''}</p>
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">
+                          {result.category.name}
+                        </p>
+                        <h3 className="mt-2 text-lg font-semibold tracking-tight text-slate-950">
+                          {result.title}
+                        </h3>
+                        <p className="mt-2 text-sm leading-7 text-slate-600">
+                          {result.excerpt}
+                        </p>
                       </div>
                     </Link>
-                  )) ?? null}
-                </div>
-              )}
-
-              {!loading && (query?.length ?? 0) >= 2 && (results?.length ?? 0) === 0 && (
-                <div className="py-8 text-center text-gray-500">
-                  Sonuç bulunamadı
-                </div>
-              )}
-
-              {!loading && (query?.length ?? 0) < 2 && (
-                <div className="py-8 text-center text-gray-400">
-                  Aramak için en az 2 karakter girin
+                  ))}
                 </div>
               )}
             </div>
           </div>
-        </motion.div>
-      </motion.div>
-    </AnimatePresence>
+        </div>
+      ) : null}
+    </>
   );
 }

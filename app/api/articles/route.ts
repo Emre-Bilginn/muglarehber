@@ -1,67 +1,31 @@
-import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/db';
-import { logServerDebug, logServerError } from '@/lib/server-log';
-
-export const dynamic = "force-dynamic";
+import { NextRequest, NextResponse } from "next/server";
+import { getAllArticles, getFeaturedArticles } from "@/lib/content";
 
 export async function GET(request: NextRequest) {
-  try {
-    const searchParams = request?.nextUrl?.searchParams;
-    const category = searchParams?.get?.('category') ?? '';
-    const featured = searchParams?.get?.('featured') ?? '';
-    const limit = parseInt(searchParams?.get?.('limit') ?? '10', 10);
+  const category = request.nextUrl.searchParams.get("category");
+  const featured = request.nextUrl.searchParams.get("featured");
+  const limit = Number(request.nextUrl.searchParams.get("limit") ?? 10);
 
-    const whereClause: { categoryId?: string; isFeatured?: boolean; category?: { slug: string } } = {};
+  let articles = featured === "true" ? getFeaturedArticles(limit) : getAllArticles();
 
-    if (category) {
-      whereClause.category = { slug: category };
-    }
-
-    if (featured === 'true') {
-      whereClause.isFeatured = true;
-    }
-
-    const articles = await prisma.article.findMany({
-      where: whereClause,
-      include: {
-        category: {
-          select: { name: true, slug: true },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-      take: limit,
-    });
-
-    logServerDebug('api/articles', 'Fetched articles', {
-      category,
-      featured,
-      limit,
-      count: articles.length,
-    });
-
-    const safeArticles = (articles ?? [])?.map?.((a: {
-      id: string;
-      title: string;
-      slug: string;
-      summary: string;
-      imageUrl: string | null;
-      createdAt: Date;
-      category: { name: string; slug: string };
-    }) => ({
-      id: a?.id ?? '',
-      title: a?.title ?? '',
-      slug: a?.slug ?? '',
-      summary: a?.summary ?? '',
-      imageUrl: a?.imageUrl ?? null,
-      createdAt: a?.createdAt?.toISOString?.() ?? '',
-      category: a?.category ?? {},
-    })) ?? [];
-
-    return NextResponse.json({ articles: safeArticles });
-  } catch (error) {
-    logServerError('api/articles', 'Failed to fetch articles', error);
-    return NextResponse.json({ articles: [], error: 'Failed to fetch articles' }, { status: 500 });
+  if (category) {
+    articles = articles.filter((article) => article.category.slug === category);
   }
+
+  return NextResponse.json({
+    articles: articles.slice(0, limit).map((article) => ({
+      slug: article.slug,
+      title: article.title,
+      excerpt: article.excerpt,
+      description: article.description,
+      image: article.image,
+      imageAlt: article.imageAlt,
+      publishedAt: article.publishedAt,
+      readingTime: article.readingTime,
+      category: {
+        name: article.category.name,
+        slug: article.category.slug,
+      },
+    })),
+  });
 }

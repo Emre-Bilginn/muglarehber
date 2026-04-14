@@ -1,233 +1,177 @@
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import prisma from '@/lib/db';
-import { fallbackCategories, getFallbackCategory, type FallbackCategory } from '@/lib/category-fallbacks';
-import { logServerDebug, logServerError } from '@/lib/server-log';
-import AdPlaceholder from '@/components/ad-placeholder';
-import CategoryIcon from '@/components/category-icon';
-import ArticleCard from '@/components/article-card';
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import AdPlaceholder from "@/components/ad-placeholder";
+import ArticleCard from "@/components/article-card";
+import CategoryIcon from "@/components/category-icon";
+import EmptyState from "@/components/empty-state";
+import SiteBreadcrumbs from "@/components/site-breadcrumbs";
+import { breadcrumbSchema, buildMetadata } from "@/lib/seo";
+import {
+  getArticlesByCategory,
+  getCategoriesWithCounts,
+  getCategoryBySlug,
+  guideCategories,
+} from "@/lib/content";
+import { absoluteUrl } from "@/lib/site-config";
 
-export const dynamic = 'force-dynamic';
-
-interface Article {
-  id: string;
-  title: string;
-  slug: string;
-  summary: string;
-  imageUrl: string | null;
-  createdAt: Date;
-}
-
-interface CategoryWithArticles {
-  id: string;
-  name: string;
-  slug: string;
-  description: string | null;
-  icon: string | null;
-  order?: number;
-  articles: Article[];
-}
-
-interface CategoryWithCount {
-  id: string;
-  name: string;
-  slug: string;
-  icon: string | null;
-  order?: number;
-  _count: { articles: number };
-}
-
-interface CategoryPageProps {
-  params: { slug: string };
-}
-
-function toFallbackCategoryWithArticles(category: FallbackCategory): CategoryWithArticles {
-  return {
-    id: category.slug,
-    name: category.name,
-    slug: category.slug,
-    description: category.description,
-    icon: category.icon,
-    order: category.order,
-    articles: [],
+type CategoryPageProps = {
+  params: {
+    slug: string;
   };
-}
-
-function toFallbackCategoryWithCount(category: FallbackCategory): CategoryWithCount {
-  return {
-    id: category.slug,
-    name: category.name,
-    slug: category.slug,
-    icon: category.icon,
-    order: category.order,
-    _count: { articles: 0 },
-  };
-}
+};
 
 export function generateStaticParams() {
-  return fallbackCategories.map((category) => ({
+  return guideCategories.map((category) => ({
     slug: category.slug,
   }));
 }
 
-async function getCategory(slug: string): Promise<CategoryWithArticles | null> {
-  try {
-    const category = await prisma.category.findUnique({
-      where: { slug: slug ?? '' },
-      include: {
-        articles: {
-          orderBy: { createdAt: 'desc' },
-        },
-      },
-    });
+export function generateMetadata({ params }: CategoryPageProps) {
+  const category = getCategoryBySlug(params.slug);
 
-    logServerDebug('app/category', 'Fetched category detail', {
-      slug,
-      found: Boolean(category),
-      articleCount: category?.articles?.length ?? 0,
-    });
-
-    if (category) {
-      return category as CategoryWithArticles;
-    }
-  } catch (error) {
-    logServerError('app/category', 'Failed to fetch category detail', error, {
-      slug,
-    });
-  }
-
-  const fallbackCategory = getFallbackCategory(slug);
-  return fallbackCategory ? toFallbackCategoryWithArticles(fallbackCategory) : null;
-}
-
-async function getCategories(): Promise<CategoryWithCount[]> {
-  try {
-    const categories = (await prisma.category.findMany({
-      orderBy: { order: 'asc' },
-      include: { _count: { select: { articles: true } } },
-    })) as CategoryWithCount[];
-
-    const mergedCategories = new Map<string, CategoryWithCount>();
-
-    for (const category of fallbackCategories) {
-      mergedCategories.set(category.slug, toFallbackCategoryWithCount(category));
-    }
-
-    for (const category of categories) {
-      mergedCategories.set(category.slug, category);
-    }
-
-    const resolvedCategories = [...mergedCategories.values()].sort(
-      (left, right) => (left.order ?? 999) - (right.order ?? 999),
-    );
-
-    logServerDebug('app/category', 'Fetched category sidebar list', {
-      count: resolvedCategories.length,
-    });
-
-    return resolvedCategories;
-  } catch (error) {
-    logServerError('app/category', 'Failed to fetch category sidebar list', error);
-    return fallbackCategories.map(toFallbackCategoryWithCount);
-  }
-}
-
-export async function generateMetadata({ params }: CategoryPageProps) {
-  const category = await getCategory(params?.slug ?? '');
   if (!category) {
-    return { title: 'Kategori Bulunamadı - Keşfet Muğla' };
+    return buildMetadata({
+      title: "Kategori bulunamadı | Keşfet Muğla",
+      description: "İstenen kategori sayfası bulunamadı.",
+      path: `/kategori/${params.slug}`,
+    });
   }
-  return {
-    title: `${category?.name ?? ''} - Keşfet Muğla`,
-    description: category?.description ?? `Muğla bölgesinde ${category?.name ?? ''} hakkında bilgiler.`,
-  };
+
+  return buildMetadata({
+    title: `${category.name} | Keşfet Muğla`,
+    description: category.seoDescription,
+    path: `/kategori/${category.slug}`,
+    image: "/og-image.png",
+    keywords: [category.name, "Muğla", "rehber içerik", "kategori"],
+  });
 }
 
-export default async function CategoryPage({ params }: CategoryPageProps) {
-  const [category, allCategories] = await Promise.all([
-    getCategory(params?.slug ?? ''),
-    getCategories(),
-  ]);
+export default function CategoryPage({ params }: CategoryPageProps) {
+  const category = getCategoryBySlug(params.slug);
 
   if (!category) {
     notFound();
   }
 
-  const articles = category?.articles ?? [];
+  const articles = getArticlesByCategory(category.slug);
+  const categories = getCategoriesWithCounts();
+  const schema = breadcrumbSchema([
+    { name: "Ana sayfa", url: absoluteUrl("/") },
+    { name: category.name, url: absoluteUrl(`/kategori/${category.slug}`) },
+  ]);
 
   return (
-    <div className="pt-16">
-      <section className="bg-gradient-hero text-white py-12">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center">
-              <CategoryIcon icon={category?.icon ?? ''} className="w-8 h-8" />
+    <div className="bg-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      />
+
+      <section className="border-b border-slate-200 bg-slate-50">
+        <div className="mx-auto max-w-7xl px-4 py-10 md:py-14">
+          <SiteBreadcrumbs
+            items={[
+              { label: "Ana sayfa", href: "/" },
+              { label: category.name },
+            ]}
+          />
+
+          <div className="mt-8 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div className="max-w-4xl">
+              <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-900 text-white">
+                <CategoryIcon icon={category.icon} className="h-6 w-6" />
+              </div>
+              <p className="mt-5 text-xs font-semibold uppercase tracking-[0.2em] text-sky-700">
+                Kategori arşivi
+              </p>
+              <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-950 md:text-5xl">
+                {category.name}
+              </h1>
+              <p className="mt-4 text-base leading-8 text-slate-600 md:text-lg">
+                {category.intro}
+              </p>
             </div>
-            <div>
-              <h1 className="text-3xl font-bold mb-1">{category?.name ?? ''}</h1>
-              <p className="text-white/80">{category?.description ?? ''}</p>
+
+            <div className="rounded-[2rem] border border-slate-200 bg-white px-6 py-5 shadow-sm">
+              <p className="text-sm font-medium text-slate-500">Bu kategoride yayında olan içerik</p>
+              <p className="mt-2 text-3xl font-semibold text-slate-950">{articles.length}</p>
             </div>
           </div>
         </div>
       </section>
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          <div className="flex-1">
-            <AdPlaceholder size="banner" className="mb-6" />
+      <div className="mx-auto max-w-7xl px-4 py-8">
+        <AdPlaceholder
+          size="banner"
+          label={`${category.name} kategori sayfası için planlanan üst reklam alanı. İçerik giriş metninin önüne geçmeyecek ölçüde tasarlanmıştır.`}
+        />
+      </div>
 
-            {(articles?.length ?? 0) === 0 ? (
-              <div className="text-center py-12 bg-gray-50 rounded-xl">
-                <p className="text-gray-500">
-                  Bu kategori için henüz içerik bulunmuyor. İlgili sayfa artık 404 vermiyor; veri eklendiğinde
-                  içerikler burada listelenecek.
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {articles?.map?.((article: Article, index: number) => (
-                  <div key={article?.id ?? index}>
-                    <ArticleCard
-                      variant="row"
-                      href={`/makale/${article?.slug ?? ''}`}
-                      title={article?.title ?? ''}
-                      summary={article?.summary ?? ''}
-                      imageUrl={article?.imageUrl ?? ''}
-                      date={article?.createdAt ? article?.createdAt?.toISOString?.() : ''}
+      <section className="mx-auto grid max-w-7xl gap-8 px-4 pb-14 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div>
+          {articles.length === 0 ? (
+            <EmptyState
+              title="Bu kategori için içerik hazırlık aşamasında"
+              description={`${category.name} arşivi için kapsamlı rehberler editöryel sıraya alındı. Bu kategori, kısa içeriklerle doldurulmak yerine yeterli derinlik sağlandığında yayına alınır.`}
+              ctaHref="/"
+              ctaLabel="Ana sayfaya dön"
+            />
+          ) : (
+            <div className="space-y-6">
+              {articles.map((article, index) => (
+                <div key={article.slug} className="space-y-6">
+                  <ArticleCard article={article} variant="row" />
+                  {index === 1 ? (
+                    <AdPlaceholder
+                      size="inline"
+                      label="Kategori akışı içinde kullanılabilecek doğal reklam alanı."
                     />
-                    {(index ?? 0) === 1 && <AdPlaceholder size="inline" className="mt-6" />}
-                  </div>
-                )) ?? null}
-              </div>
-            )}
+                  ) : null}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <aside className="space-y-6">
+          <div className="rounded-[2rem] border border-slate-200 bg-white p-6">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+              Bu kategori ne sunar?
+            </p>
+            <p className="mt-4 text-sm leading-7 text-slate-600">
+              {category.description}
+            </p>
           </div>
 
-          <aside className="w-full lg:w-72 space-y-6">
-            <AdPlaceholder size="sidebar" />
+          <AdPlaceholder
+            size="sidebar"
+            label="Kategori yan alanı için ayrılan reklam yeri. İçeriğin okunabilirliğini bozmayacak seviyede tutulur."
+          />
 
-            <div className="bg-white rounded-xl shadow-md p-5">
-              <h3 className="font-bold text-gray-900 mb-4">Diğer Kategoriler</h3>
-              <div className="space-y-2">
-                {allCategories
-                  ?.filter?.((categoryItem: CategoryWithCount) => categoryItem?.slug !== params?.slug)
-                  ?.map?.((cat: CategoryWithCount) => (
-                    <Link
-                      key={cat?.id ?? ''}
-                      href={`/kategori/${cat?.slug ?? ''}`}
-                      className="flex items-center justify-between p-3 hover:bg-gray-50 rounded-lg transition-colors"
-                    >
-                      <div className="flex items-center gap-2">
-                        <CategoryIcon icon={cat?.icon ?? ''} className="w-4 h-4 text-sky-500" />
-                        <span className="text-sm text-gray-700">{cat?.name ?? ''}</span>
-                      </div>
-                      <span className="text-xs text-gray-400">{cat?._count?.articles ?? 0}</span>
-                    </Link>
-                  )) ?? null}
-              </div>
+          <div className="rounded-[2rem] border border-slate-200 bg-white p-6">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+              Diğer kategoriler
+            </p>
+            <div className="mt-4 space-y-3">
+              {categories
+                .filter((item) => item.slug !== category.slug)
+                .map((item) => (
+                  <Link
+                    key={item.slug}
+                    href={`/kategori/${item.slug}`}
+                    className="flex items-center justify-between rounded-[1.25rem] border border-slate-200 px-4 py-3 text-sm text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+                  >
+                    <span className="inline-flex items-center gap-3">
+                      <CategoryIcon icon={item.icon} className="h-4 w-4" />
+                      {item.name}
+                    </span>
+                    <span className="text-slate-400">{item.articleCount}</span>
+                  </Link>
+                ))}
             </div>
-          </aside>
-        </div>
-      </div>
+          </div>
+        </aside>
+      </section>
     </div>
   );
 }

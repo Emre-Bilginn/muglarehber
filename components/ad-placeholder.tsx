@@ -1,27 +1,30 @@
-interface AdPlaceholderProps {
-  size?: 'banner' | 'sidebar' | 'inline' | 'footer';
+type AdPlaceholderProps = {
+  size?: "banner" | "sidebar" | "inline" | "footer";
   className?: string;
-}
-
-const sizeClasses = {
-  banner: 'h-24 md:h-28',
-  sidebar: 'h-64',
-  inline: 'h-20 md:h-24',
-  footer: 'h-20',
+  label?: string;
 };
 
-export default function AdPlaceholder({ size = 'banner', className = '' }: AdPlaceholderProps) {
-  const sizeClass = sizeClasses?.[size] ?? sizeClasses?.banner;
+const sizeClasses = {
+  banner: "min-h-[104px]",
+  sidebar: "min-h-[320px]",
+  inline: "min-h-[96px]",
+  footer: "min-h-[88px]",
+};
 
+export default function AdPlaceholder({
+  size = "banner",
+  className = "",
+  label = "İleride reklam alanı olarak kullanılabilir",
+}: AdPlaceholderProps) {
   return (
-    <div
-      className={`ad-placeholder rounded-2xl flex items-center justify-center ${sizeClass} ${className ?? ''}`}
-      aria-hidden="true"
+    <aside
+      aria-label="Reklam alanı taslak yerleşimi"
+      className={`ad-placeholder rounded-[2rem] px-6 py-5 ${sizeClasses[size]} ${className}`}
     >
-      <div className="text-center">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-400">Reklam</p>
-        <p className="text-xs text-slate-400/80">Alan ayrıldı</p>
-      </div>
-    </div>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+        Reklam Alanı
+      </p>
+      <p className="mt-2 max-w-xl text-sm leading-6 text-slate-600">{label}</p>
+    </aside>
   );
 }

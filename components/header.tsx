@@ -1,105 +1,76 @@
-'use client';
+import Link from "next/link";
+import { Compass, Mail } from "lucide-react";
+import SearchModal from "@/components/search-modal";
+import { guideCategories } from "@/lib/content";
 
-import Link from 'next/link';
-import { useState, useEffect } from 'react';
-import { Menu, X, Search, Compass } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import SearchModal from './search-modal';
-
-const navLinks = [
-  { href: '/kategori/gezilecek-yerler', label: 'Gezilecek Yerler' },
-  { href: '/kategori/plajlar', label: 'Plajlar' },
-  { href: '/kategori/restoranlar-kafeler', label: 'Restoranlar' },
-  { href: '/kategori/aktiviteler', label: 'Aktiviteler' },
-  { href: '/hakkimizda', label: 'Hakkımızda' },
-  { href: '/iletisim', label: 'İletişim' },
-];
+const primaryNav = guideCategories.slice(0, 6);
 
 export default function Header() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window?.scrollY > 50);
-    };
-    window?.addEventListener('scroll', handleScroll);
-    return () => window?.removeEventListener('scroll', handleScroll);
-  }, []);
-
   return (
-    <>
-      <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          isScrolled ? 'bg-white/95 backdrop-blur-sm shadow-md' : 'bg-white shadow-sm'
-        }`}
-      >
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            <Link href="/" className="flex items-center gap-2 text-xl font-bold text-sky-600 hover:text-sky-700 transition-colors">
-              <Compass className="w-6 h-6" />
-              <span>Keşfet Muğla</span>
-            </Link>
+    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
+      <div className="border-b border-slate-100 bg-slate-50">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-2 text-xs text-slate-500">
+          <p>Muğla için güncellenen rota rehberleri, ilçe içerikleri ve gezi planları</p>
+          <Link
+            href="/iletisim"
+            className="inline-flex items-center gap-2 font-medium text-slate-700 hover:text-sky-700"
+          >
+            <Mail className="h-3.5 w-3.5" />
+            Editörle iletişime geç
+          </Link>
+        </div>
+      </div>
 
-            <nav className="hidden lg:flex items-center gap-1">
-              {navLinks?.map((link) => (
-                <Link
-                  key={link?.href ?? ''}
-                  href={link?.href ?? '#'}
-                  className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-all"
-                >
-                  {link?.label ?? ''}
-                </Link>
-              ))}
-            </nav>
+      <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <Link href="/" className="inline-flex items-center gap-3">
+            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-900 text-white">
+              <Compass className="h-6 w-6" />
+            </span>
+            <span>
+              <span className="block text-lg font-semibold tracking-tight text-slate-950">
+                Keşfet Muğla
+              </span>
+              <span className="block text-sm text-slate-500">
+                Gerçek rota mantığıyla hazırlanmış Muğla rehberleri
+              </span>
+            </span>
+          </Link>
 
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setIsSearchOpen(true)}
-                className="p-2 text-gray-600 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-all"
-                aria-label="Ara"
-              >
-                <Search className="w-5 h-5" />
-              </button>
-
-              <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                className="lg:hidden p-2 text-gray-600 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-all"
-                aria-label="Menü"
-              >
-                {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-              </button>
-            </div>
-          </div>
+          <SearchModal />
         </div>
 
-        <AnimatePresence>
-          {isMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="lg:hidden bg-white border-t"
-            >
-              <nav className="max-w-6xl mx-auto px-4 py-4 flex flex-col gap-1">
-                {navLinks?.map((link) => (
-                  <Link
-                    key={link?.href ?? ''}
-                    href={link?.href ?? '#'}
-                    onClick={() => setIsMenuOpen(false)}
-                    className="px-4 py-3 text-gray-700 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-all"
-                  >
-                    {link?.label ?? ''}
-                  </Link>
-                ))}
-              </nav>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </header>
-
-      <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
-    </>
+        <nav aria-label="Ana navigasyon" className="overflow-x-auto">
+          <ul className="flex min-w-max items-center gap-2 pb-1">
+            {primaryNav.map((category) => (
+              <li key={category.slug}>
+                <Link
+                  href={`/kategori/${category.slug}`}
+                  className="inline-flex rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950"
+                >
+                  {category.name}
+                </Link>
+              </li>
+            ))}
+            <li>
+              <Link
+                href="/hakkimizda"
+                className="inline-flex rounded-full border border-transparent px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-950"
+              >
+                Hakkımızda
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/iletisim"
+                className="inline-flex rounded-full border border-transparent px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-950"
+              >
+                İletişim
+              </Link>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </header>
   );
 }

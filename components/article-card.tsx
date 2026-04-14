@@ -1,162 +1,124 @@
-'use client';
+import Link from "next/link";
+import { CalendarDays, Clock3, ArrowUpRight } from "lucide-react";
+import type { GuideArticle } from "@/lib/content";
+import ImageWithFallback from "@/components/image-with-fallback";
 
-import Link from 'next/link';
-import { motion } from 'framer-motion';
-import { ArrowRight, Calendar } from 'lucide-react';
-import ImageWithFallback from './image-with-fallback';
+type Variant = "hero" | "default" | "row" | "compact";
 
-interface ArticleCategory {
-  name: string;
-  slug?: string;
-}
-
-type ArticleCardVariant = 'hero' | 'compact' | 'row' | 'default';
-
-interface ArticleCardProps {
-  title: string;
-  summary: string;
-  category?: ArticleCategory | null;
-  imageUrl?: string | null;
-  href: string;
-  date?: string | Date | null;
-  variant?: ArticleCardVariant;
-}
-
-const variantStyles: Record<ArticleCardVariant, {
-  wrapper: string;
-  imageWrap: string;
-  content: string;
-  title: string;
-  summary: string;
-  meta: string;
-  showSummary: boolean;
-  showMeta: boolean;
-  showBadge: boolean;
-  sizes: string;
-}> = {
-  hero: {
-    wrapper: 'group h-full rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-xl transition-all',
-    imageWrap: 'relative aspect-[16/10] bg-slate-100',
-    content: 'p-6 md:p-7',
-    title: 'text-2xl md:text-3xl font-semibold text-slate-900 group-hover:text-sky-600 transition-colors',
-    summary: 'text-slate-600 mt-3 line-clamp-3',
-    meta: 'mt-5 flex items-center justify-between text-sm text-slate-500',
-    showSummary: true,
-    showMeta: true,
-    showBadge: true,
-    sizes: '(min-width: 1024px) 60vw, 100vw',
-  },
-  compact: {
-    wrapper: 'group flex items-center gap-4 rounded-xl border border-slate-100 bg-white/90 p-4 shadow-sm hover:shadow-md transition-all',
-    imageWrap: 'relative h-20 w-28 flex-shrink-0 overflow-hidden rounded-lg bg-slate-100',
-    content: 'flex-1 min-w-0',
-    title: 'text-sm font-semibold text-slate-900 group-hover:text-sky-600 transition-colors line-clamp-2',
-    summary: 'hidden',
-    meta: 'hidden',
-    showSummary: false,
-    showMeta: false,
-    showBadge: false,
-    sizes: '(min-width: 1024px) 260px, 40vw',
-  },
-  row: {
-    wrapper: 'group flex flex-col md:flex-row rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-xl transition-all',
-    imageWrap: 'relative w-full md:w-60 aspect-[16/9] md:aspect-[4/3] bg-slate-100 flex-shrink-0',
-    content: 'p-5 flex-1',
-    title: 'text-lg font-semibold text-slate-900 group-hover:text-sky-600 transition-colors line-clamp-2',
-    summary: 'text-sm text-slate-600 mt-2 line-clamp-2',
-    meta: 'mt-4 flex items-center justify-between text-sm text-slate-500',
-    showSummary: true,
-    showMeta: true,
-    showBadge: false,
-    sizes: '(min-width: 1024px) 260px, 100vw',
-  },
-  default: {
-    wrapper: 'group rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-xl transition-all',
-    imageWrap: 'relative aspect-[16/10] bg-slate-100',
-    content: 'p-5',
-    title: 'text-lg font-semibold text-slate-900 group-hover:text-sky-600 transition-colors line-clamp-2',
-    summary: 'text-sm text-slate-600 mt-2 line-clamp-2',
-    meta: 'mt-4 flex items-center justify-between text-sm text-slate-500',
-    showSummary: true,
-    showMeta: true,
-    showBadge: true,
-    sizes: '(min-width: 1024px) 360px, 100vw',
-  },
+type ArticleCardProps = {
+  article: GuideArticle;
+  variant?: Variant;
 };
 
-function formatDate(date?: string | Date | null) {
-  if (!date) return '';
-  const parsed = typeof date === 'string' ? new Date(date) : date;
-  if (Number.isNaN(parsed?.getTime?.())) return '';
-  return parsed.toLocaleDateString('tr-TR', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric',
+const variants: Record<Variant, string> = {
+  hero: "grid overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm lg:grid-cols-[1.15fr_0.85fr]",
+  default: "overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm",
+  row: "grid overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm md:grid-cols-[320px_1fr]",
+  compact: "grid gap-4 rounded-[1.5rem] border border-slate-200 bg-white p-4 md:grid-cols-[120px_1fr]",
+};
+
+function formatDate(value: string) {
+  return new Date(value).toLocaleDateString("tr-TR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
   });
 }
 
 export default function ArticleCard({
-  title,
-  summary,
-  category,
-  imageUrl,
-  href,
-  date,
-  variant = 'default',
+  article,
+  variant = "default",
 }: ArticleCardProps) {
-  const styles = variantStyles[variant];
-  const formattedDate = formatDate(date);
-  const showBadge = styles.showBadge && !!category?.name;
-  const isPriority = variant === 'hero';
+  const isCompact = variant === "compact";
+  const isRow = variant === "row";
+  const isHero = variant === "hero";
 
   return (
-    <motion.article
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
-      transition={{ duration: 0.4, ease: 'easeOut' }}
-      className={styles.wrapper}
-    >
-      <Link href={href} className="block h-full">
-        <div className={styles.imageWrap}>
-          <ImageWithFallback
-            src={imageUrl ?? undefined}
-            alt={title ?? ''}
-            fill
-            sizes={styles.sizes}
-            priority={isPriority}
-            loading={isPriority ? 'eager' : 'lazy'}
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-          {showBadge && (
-            <div className="absolute top-3 left-3">
-              <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-sky-700 shadow-sm">
-                {category?.name ?? ''}
-              </span>
-            </div>
-          )}
+    <article className={variants[variant]}>
+      <div
+        className={
+          isCompact
+            ? "relative aspect-[4/3] overflow-hidden rounded-[1rem]"
+            : "relative min-h-[240px] overflow-hidden bg-slate-100"
+        }
+      >
+        <ImageWithFallback
+          src={article.image}
+          alt={article.imageAlt}
+          fill
+          sizes={
+            isHero
+              ? "(min-width: 1024px) 52vw, 100vw"
+              : isRow
+                ? "(min-width: 768px) 320px, 100vw"
+                : isCompact
+                  ? "120px"
+                  : "(min-width: 1024px) 33vw, 100vw"
+          }
+          className="object-cover"
+          priority={isHero}
+        />
+        {!isCompact ? (
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/55 to-transparent" />
+        ) : null}
+        <div className="absolute left-4 top-4">
+          <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-slate-900">
+            {article.category.name}
+          </span>
         </div>
-        <div className={styles.content}>
-          {category?.name && !showBadge && (
-            <span className="text-xs font-semibold text-sky-600">{category?.name ?? ''}</span>
-          )}
-          <h3 className={styles.title}>{title ?? ''}</h3>
-          {styles.showSummary && (
-            <p className={styles.summary}>{summary ?? ''}</p>
-          )}
-          {styles.showMeta && (
-            <div className={styles.meta}>
-              <span className="flex items-center gap-1">
-                <Calendar className="h-4 w-4 text-slate-400" />
-                {formattedDate}
-              </span>
-              <span className="flex items-center gap-1 text-sky-600 font-medium">
-                Devamını Oku <ArrowRight className="h-4 w-4" />
-              </span>
-            </div>
-          )}
+      </div>
+
+      <div className={isCompact ? "min-w-0" : "flex flex-col justify-between p-6 md:p-7"}>
+        {!isCompact ? (
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">
+              {article.district || article.category.name}
+            </p>
+            <h3
+              className={`mt-3 font-semibold tracking-tight text-slate-950 ${
+                isHero ? "text-3xl" : isRow ? "text-2xl" : "text-xl"
+              }`}
+            >
+              <Link href={`/makale/${article.slug}`} className="hover:text-sky-700">
+                {article.title}
+              </Link>
+            </h3>
+            <p className="mt-3 text-sm leading-7 text-slate-600">{article.excerpt}</p>
+          </div>
+        ) : (
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">
+              {article.category.name}
+            </p>
+            <h3 className="mt-2 line-clamp-2 text-base font-semibold tracking-tight text-slate-950">
+              <Link href={`/makale/${article.slug}`} className="hover:text-sky-700">
+                {article.title}
+              </Link>
+            </h3>
+            <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">
+              {article.excerpt}
+            </p>
+          </div>
+        )}
+
+        <div className={`mt-5 flex flex-wrap items-center gap-4 text-sm text-slate-500 ${isCompact ? "mt-3" : ""}`}>
+          <span className="inline-flex items-center gap-2">
+            <CalendarDays className="h-4 w-4" />
+            {formatDate(article.publishedAt)}
+          </span>
+          <span className="inline-flex items-center gap-2">
+            <Clock3 className="h-4 w-4" />
+            {article.readingTime} dk okuma
+          </span>
+          <Link
+            href={`/makale/${article.slug}`}
+            className="inline-flex items-center gap-2 font-medium text-slate-900 hover:text-sky-700"
+          >
+            Rehberi aç
+            <ArrowUpRight className="h-4 w-4" />
+          </Link>
         </div>
-      </Link>
-    </motion.article>
+      </div>
+    </article>
   );
 }

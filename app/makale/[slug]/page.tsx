@@ -1,301 +1,307 @@
-import Link from 'next/link';
-import ImageWithFallback from '@/components/image-with-fallback';
-import { notFound } from 'next/navigation';
-import prisma from '@/lib/db';
-import { logServerDebug, logServerError } from '@/lib/server-log';
-import AdPlaceholder from '@/components/ad-placeholder';
-import CommentSection from '@/components/comment-section';
-import MapEmbed from '@/components/map-embed';
-import { ArrowLeft, Calendar, Eye, CheckCircle } from 'lucide-react';
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import {
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
+  Clock3,
+  User2,
+} from "lucide-react";
+import AdPlaceholder from "@/components/ad-placeholder";
+import ArticleCard from "@/components/article-card";
+import ImageWithFallback from "@/components/image-with-fallback";
+import MarkdownContent from "@/components/markdown-content";
+import ShareLinks from "@/components/share-links";
+import SiteBreadcrumbs from "@/components/site-breadcrumbs";
+import TableOfContents from "@/components/table-of-contents";
+import { articleSchema, breadcrumbSchema, buildMetadata } from "@/lib/seo";
+import {
+  getAllArticles,
+  getArticleBySlug,
+  getPrevNextArticles,
+  getRelatedArticles,
+} from "@/lib/content";
+import { absoluteUrl } from "@/lib/site-config";
 
-export const dynamic = "force-dynamic";
-
-interface Article {
-  id: string;
-  title: string;
-  slug: string;
-  summary: string;
-  content: string;
-  imageUrl: string | null;
-  gpsLat: number | null;
-  gpsLng: number | null;
-  highlights: string[];
-  viewCount: number;
-  categoryId: string;
-  createdAt: Date;
-  category: { name: string; slug: string };
-}
-
-interface RelatedArticle {
-  id: string;
-  title: string;
-  slug: string;
-  imageUrl: string | null;
-}
-
-interface ArticlePageProps {
-  params: { slug: string };
-}
-
-async function getArticle(slug: string): Promise<Article | null> {
-  try {
-    const article = await prisma.article.findUnique({
-      where: { slug: slug ?? '' },
-      include: {
-        category: true,
-      },
-    });
-
-    logServerDebug('app/article', 'Fetched article detail', {
-      slug,
-      found: Boolean(article),
-      articleId: article?.id ?? null,
-    });
-
-    return article as Article | null;
-  } catch (error) {
-    logServerError('app/article', 'Failed to fetch article detail', error, {
-      slug,
-    });
-    throw error;
-  }
-}
-
-async function incrementArticleViewCount(articleId: string): Promise<number | null> {
-  try {
-    const updatedArticle = await prisma.article.update({
-      where: { id: articleId ?? '' },
-      data: {
-        viewCount: {
-          increment: 1,
-        },
-      },
-      select: {
-        viewCount: true,
-      },
-    });
-
-    logServerDebug('app/article', 'Incremented article view count', {
-      articleId,
-      viewCount: updatedArticle.viewCount,
-    });
-
-    return updatedArticle.viewCount;
-  } catch (error) {
-    logServerError('app/article', 'Failed to increment article view count', error, {
-      articleId,
-    });
-    return null;
-  }
-}
-
-async function getRelatedArticles(categoryId: string, currentId: string): Promise<RelatedArticle[]> {
-  try {
-    const articles = await prisma.article.findMany({
-      where: {
-        categoryId: categoryId ?? '',
-        id: { not: currentId ?? '' },
-      },
-      take: 3,
-      orderBy: { createdAt: 'desc' },
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        imageUrl: true,
-      },
-    });
-
-    logServerDebug('app/article', 'Fetched related articles', {
-      categoryId,
-      currentId,
-      count: articles.length,
-    });
-
-    return articles as RelatedArticle[];
-  } catch (error) {
-    logServerError('app/article', 'Failed to fetch related articles', error, {
-      categoryId,
-      currentId,
-    });
-    return [];
-  }
-}
-
-export async function generateMetadata({ params }: ArticlePageProps) {
-  const article = await getArticle(params?.slug ?? '');
-  if (!article) {
-    return { title: 'Makale Bulunamadı - Muğla Rehber' };
-  }
-  return {
-    title: `${article?.title ?? ''} - Muğla Rehber`,
-    description: article?.summary ?? '',
-    openGraph: {
-      title: article?.title ?? '',
-      description: article?.summary ?? '',
-      images: article?.imageUrl ? [article?.imageUrl] : [],
-    },
+type ArticlePageProps = {
+  params: {
+    slug: string;
   };
+};
+
+const quickFactLabels = {
+  idealSeason: "En iyi dönem",
+  visitDuration: "Önerilen süre",
+  transport: "Ulaşım",
+  suitableFor: "Kimler için uygun",
+  caution: "Dikkat edilmesi gereken",
+};
+
+export function generateStaticParams() {
+  return getAllArticles().map((article) => ({
+    slug: article.slug,
+  }));
 }
 
-export default async function ArticlePage({ params }: ArticlePageProps) {
-  const article = await getArticle(params?.slug ?? '');
+export function generateMetadata({ params }: ArticlePageProps) {
+  const article = getArticleBySlug(params.slug);
+
+  if (!article) {
+    return buildMetadata({
+      title: "Makale bulunamadı | Keşfet Muğla",
+      description: "İstenen rehber içeriği bulunamadı.",
+      path: `/makale/${params.slug}`,
+    });
+  }
+
+  return buildMetadata({
+    title: `${article.title} | Keşfet Muğla`,
+    description: article.description,
+    path: `/makale/${article.slug}`,
+    image: article.image,
+    keywords: [article.title, article.category.name, "Muğla rehberi", ...article.tags],
+    type: "article",
+  });
+}
+
+function formatDate(value: string) {
+  return new Date(value).toLocaleDateString("tr-TR", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+export default function ArticlePage({ params }: ArticlePageProps) {
+  const article = getArticleBySlug(params.slug);
 
   if (!article) {
     notFound();
   }
 
-  const [relatedArticles, updatedViewCount] = await Promise.all([
-    getRelatedArticles(article?.categoryId ?? '', article?.id ?? ''),
-    incrementArticleViewCount(article?.id ?? ''),
+  const relatedArticles = getRelatedArticles(article, 3);
+  const { previous, next } = getPrevNextArticles(article);
+  const breadcrumbItems = [
+    { label: "Ana sayfa", href: "/" },
+    { label: article.category.name, href: `/kategori/${article.category.slug}` },
+    { label: article.title },
+  ];
+
+  const breadcrumbJsonLd = breadcrumbSchema([
+    { name: "Ana sayfa", url: absoluteUrl("/") },
+    { name: article.category.name, url: absoluteUrl(`/kategori/${article.category.slug}`) },
+    { name: article.title, url: article.url },
   ]);
-  const highlights = article?.highlights ?? [];
-  const content = article?.content ?? '';
-  const paragraphs = content?.split?.('\n\n')?.filter?.((p: string) => p?.trim?.()) ?? [];
-  const viewCount = updatedViewCount ?? article?.viewCount ?? 0;
+
+  const articleJsonLd = articleSchema({
+    title: article.title,
+    description: article.description,
+    url: article.url,
+    image: article.image.startsWith("http") ? article.image : absoluteUrl(article.image),
+    publishedAt: article.publishedAt,
+    updatedAt: article.updatedAt,
+    authorName: article.author.name,
+    categoryName: article.category.name,
+  });
 
   return (
-    <div className="pt-16">
-      {/* Header Image */}
-      <section className="relative h-[40vh] md:h-[50vh] bg-gray-900">
-        <ImageWithFallback
-          src={article?.imageUrl ?? undefined}
-          alt={article?.title ?? ''}
-          fill
-          sizes="100vw"
-          className="object-cover opacity-70"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/50 to-transparent" />
-        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
-          <div className="max-w-4xl mx-auto">
-            <Link
-              href={`/kategori/${article?.category?.slug ?? ''}`}
-              className="inline-flex items-center gap-1 px-3 py-1 bg-sky-500 text-white text-sm font-medium rounded-full mb-3 hover:bg-sky-600 transition-colors"
-            >
-              {article?.category?.name ?? ''}
-            </Link>
-            <h1 className="text-2xl md:text-4xl font-bold text-white mb-3">
-              {article?.title ?? ''}
-            </h1>
-            <div className="flex items-center gap-4 text-white/70 text-sm">
-              <span className="flex items-center gap-1">
-                <Calendar className="w-4 h-4" />
-                {article?.createdAt
-                  ? new Date(article?.createdAt)?.toLocaleDateString?.('tr-TR', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric',
-                    })
-                  : ''}
-              </span>
-              <span className="flex items-center gap-1">
-                <Eye className="w-4 h-4" />
-                {viewCount} görüntülenme
-              </span>
+    <div className="bg-white">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
+
+      <section className="border-b border-slate-200 bg-slate-50">
+        <div className="mx-auto max-w-7xl px-4 py-10 md:py-14">
+          <SiteBreadcrumbs items={breadcrumbItems} />
+
+          <div className="mt-8 grid gap-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+            <div>
+              <Link
+                href={`/kategori/${article.category.slug}`}
+                className="inline-flex rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800"
+              >
+                {article.category.name}
+              </Link>
+              <h1 className="mt-5 max-w-4xl text-4xl font-semibold tracking-tight text-slate-950 md:text-5xl">
+                {article.title}
+              </h1>
+              <p className="mt-5 max-w-3xl text-base leading-8 text-slate-600 md:text-lg">
+                {article.description}
+              </p>
+
+              <div className="mt-6 flex flex-wrap gap-5 text-sm text-slate-500">
+                <span className="inline-flex items-center gap-2">
+                  <CalendarDays className="h-4 w-4" />
+                  {formatDate(article.publishedAt)}
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <User2 className="h-4 w-4" />
+                  {article.author.name}
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <Clock3 className="h-4 w-4" />
+                  {article.readingTime} dk okuma
+                </span>
+              </div>
+            </div>
+
+            <div className="relative min-h-[320px] overflow-hidden rounded-[2.25rem] border border-slate-200 bg-slate-100 shadow-sm">
+              <ImageWithFallback
+                src={article.image}
+                alt={article.imageAlt}
+                fill
+                priority
+                sizes="(min-width: 1024px) 42vw, 100vw"
+                className="object-cover"
+              />
             </div>
           </div>
         </div>
       </section>
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <Link
-          href={`/kategori/${article?.category?.slug ?? ''}`}
-          className="inline-flex items-center gap-2 text-sky-600 hover:text-sky-700 mb-6"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          {article?.category?.name ?? ''} kategorisine dön
-        </Link>
+      <div className="mx-auto max-w-7xl px-4 py-8">
+        <AdPlaceholder
+          size="banner"
+          label="Makale üstü reklam yerleşimi için ayrılmış alan. Yayın akışını bozmadan içerik başlangıcının üzerine konumlanabilir."
+        />
+      </div>
 
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Main Content */}
-          <article className="flex-1">
-            <div className="bg-white rounded-xl shadow-md p-6 md:p-8">
-              <p className="text-lg text-gray-600 mb-6 border-l-4 border-sky-500 pl-4">
-                {article?.summary ?? ''}
-              </p>
-
-              <AdPlaceholder size="inline" className="mb-6" />
-
-              <div className="prose max-w-none">
-                {paragraphs?.map?.((paragraph: string, index: number) => (
-                  <div key={index ?? 0}>
-                    <p className="text-gray-700 leading-relaxed mb-4">
-                      {paragraph?.split?.('**')?.map?.((part: string, i: number) => (
-                        i % 2 === 1 ? <strong key={i}>{part ?? ''}</strong> : (part ?? '')
-                      )) ?? paragraph}
-                    </p>
-                    {(index ?? 0) === Math.floor((paragraphs?.length ?? 0) / 2) && (
-                      <AdPlaceholder size="inline" className="my-6" />
-                    )}
-                  </div>
-                )) ?? null}
+      <section className="mx-auto grid max-w-7xl gap-8 px-4 pb-14 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="space-y-8">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {Object.entries(article.quickFacts).map(([key, value]) => (
+              <div key={key} className="rounded-[1.75rem] border border-slate-200 bg-white p-5">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                  {quickFactLabels[key as keyof typeof quickFactLabels]}
+                </p>
+                <p className="mt-3 text-sm leading-7 text-slate-700">{value}</p>
               </div>
+            ))}
+          </div>
 
-              {(highlights?.length ?? 0) > 0 && (
-                <div className="mt-8 p-6 bg-sky-50 rounded-xl">
-                  <h3 className="font-bold text-gray-900 mb-4">Öne Çıkan Özellikler</h3>
-                  <ul className="space-y-2">
-                    {highlights?.map?.((highlight: string, index: number) => (
-                      <li key={index ?? 0} className="flex items-start gap-2">
-                        <CheckCircle className="w-5 h-5 text-sky-500 flex-shrink-0 mt-0.5" />
-                        <span className="text-gray-700">{highlight ?? ''}</span>
+          <div className="rounded-[2rem] border border-slate-200 bg-white p-6 md:p-10">
+            <div className="rounded-[1.75rem] border border-sky-200 bg-sky-50 px-5 py-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">
+                Hızlı özet
+              </p>
+              <p className="mt-3 text-base leading-8 text-slate-700">
+                {article.excerpt}
+              </p>
+            </div>
+
+            <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_280px]">
+              <div className="space-y-8">
+                <div className="rounded-[1.75rem] border border-slate-200 bg-slate-50 px-5 py-5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                    Editör notları
+                  </p>
+                  <ul className="mt-4 space-y-3">
+                    {article.highlights.map((item) => (
+                      <li key={item} className="flex gap-3 text-sm leading-7 text-slate-700">
+                        <span className="mt-2 h-2 w-2 rounded-full bg-sky-700" />
+                        <span>{item}</span>
                       </li>
-                    )) ?? null}
+                    ))}
                   </ul>
                 </div>
-              )}
-            </div>
 
-            {(article?.gpsLat && article?.gpsLng) && (
-              <div className="mt-6">
-                <MapEmbed
-                  lat={article?.gpsLat ?? null}
-                  lng={article?.gpsLng ?? null}
-                  title={article?.title ?? ''}
+                <AdPlaceholder
+                  size="inline"
+                  label="Makale içi reklam için ayrılmış alan. Uzun rehber akışında yalnızca doğal kırılım noktalarında kullanılmalıdır."
                 />
-              </div>
-            )}
 
-            <div className="mt-6">
-              <CommentSection articleId={article?.id ?? ''} />
-            </div>
-          </article>
+                <MarkdownContent content={article.body} />
 
-          {/* Sidebar */}
-          <aside className="w-full lg:w-80 space-y-6">
-            <AdPlaceholder size="sidebar" />
-
-            {(relatedArticles?.length ?? 0) > 0 && (
-              <div className="bg-white rounded-xl shadow-md p-5">
-                <h3 className="font-bold text-gray-900 mb-4">Benzer Yazılar</h3>
-                <div className="space-y-4">
-                  {relatedArticles?.map?.((related: RelatedArticle) => (
-                    <Link key={related?.id ?? ''} href={`/makale/${related?.slug ?? ''}`} className="group flex gap-3">
-                      <div className="relative w-20 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-                        <ImageWithFallback
-                          src={related?.imageUrl ?? undefined}
-                          alt={related?.title ?? ''}
-                          fill
-                          sizes="80px"
-                          className="object-cover"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-gray-900 group-hover:text-sky-600 transition-colors line-clamp-2 text-sm">
-                          {related?.title ?? ''}
-                        </h4>
-                      </div>
-                    </Link>
-                  )) ?? null}
+                <div className="rounded-[1.75rem] border border-emerald-200 bg-emerald-50 px-5 py-5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-800">
+                    Son söz
+                  </p>
+                  <p className="mt-3 text-base leading-8 text-slate-700">
+                    Bu rehber, ziyaret kararını kolaylaştırmak için hazırlanmıştır. Sahaya çıkmadan önce
+                    resmi saatleri, ulaşım koşullarını ve sezon yoğunluğunu ayrıca doğrulamak gezi kalitesini artırır.
+                  </p>
                 </div>
               </div>
-            )}
 
-            <AdPlaceholder size="sidebar" />
-          </aside>
+              <div className="space-y-6">
+                <TableOfContents items={article.tableOfContents} />
+                <div className="rounded-[2rem] border border-slate-200 bg-white p-5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                    Yazar
+                  </p>
+                  <p className="mt-3 text-base font-semibold text-slate-950">{article.author.name}</p>
+                  <p className="mt-1 text-sm text-slate-500">{article.author.title}</p>
+                  <p className="mt-3 text-sm leading-7 text-slate-600">{article.author.bio}</p>
+                </div>
+                <ShareLinks title={article.title} url={article.url} />
+                <AdPlaceholder
+                  size="sidebar"
+                  label="Yan kolon reklam alanı. İçindekiler ve paylaşım modülleriyle rekabet etmeyecek ölçüde planlanmıştır."
+                />
+              </div>
+            </div>
+          </div>
+
+          {(previous || next) ? (
+            <div className="grid gap-4 md:grid-cols-2">
+              {previous ? (
+                <Link
+                  href={`/makale/${previous.slug}`}
+                  className="rounded-[2rem] border border-slate-200 bg-white p-5 hover:border-slate-300"
+                >
+                  <p className="inline-flex items-center gap-2 text-sm text-slate-500">
+                    <ChevronLeft className="h-4 w-4" />
+                    Önceki içerik
+                  </p>
+                  <p className="mt-3 text-lg font-semibold tracking-tight text-slate-950">
+                    {previous.title}
+                  </p>
+                </Link>
+              ) : (
+                <div />
+              )}
+
+              {next ? (
+                <Link
+                  href={`/makale/${next.slug}`}
+                  className="rounded-[2rem] border border-slate-200 bg-white p-5 text-right hover:border-slate-300"
+                >
+                  <p className="inline-flex items-center gap-2 text-sm text-slate-500">
+                    Sonraki içerik
+                    <ChevronRight className="h-4 w-4" />
+                  </p>
+                  <p className="mt-3 text-lg font-semibold tracking-tight text-slate-950">
+                    {next.title}
+                  </p>
+                </Link>
+              ) : null}
+            </div>
+          ) : null}
+
+          {relatedArticles.length > 0 ? (
+            <div>
+              <div className="mb-6">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">
+                  İlgili yazılar
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
+                  Bu içeriği tamamlayan rehberler
+                </h2>
+              </div>
+              <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                {relatedArticles.map((item) => (
+                  <ArticleCard key={item.slug} article={item} />
+                ))}
+              </div>
+            </div>
+          ) : null}
         </div>
-      </div>
+      </section>
     </div>
   );
 }

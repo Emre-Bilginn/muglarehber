@@ -1,14 +1,23 @@
-import { Landmark, Waves, Utensils, Hotel, Mountain, Music, Plane, MapPin } from 'lucide-react';
+import {
+  Compass,
+  Landmark,
+  MapPin,
+  MapPinned,
+  Route,
+  TentTree,
+  UtensilsCrossed,
+  Waves,
+} from "lucide-react";
 
 const iconMap: { [key: string]: React.ComponentType<{ className?: string }> } = {
+  Compass,
   Landmark,
-  Waves,
-  Utensils,
-  Hotel,
-  Mountain,
-  Music,
-  Plane,
   MapPin,
+  MapPinned,
+  Route,
+  TentTree,
+  UtensilsCrossed,
+  Waves,
 };
 
 interface CategoryIconProps {
@@ -16,7 +25,7 @@ interface CategoryIconProps {
   className?: string;
 }
 
-export default function CategoryIcon({ icon, className = 'w-6 h-6' }: CategoryIconProps) {
-  const IconComponent = iconMap?.[icon ?? ''] ?? MapPin;
-  return <IconComponent className={className ?? ''} />;
+export default function CategoryIcon({ icon, className = "w-6 h-6" }: CategoryIconProps) {
+  const IconComponent = iconMap[icon ?? ""] ?? MapPin;
+  return <IconComponent className={className} />;
 }

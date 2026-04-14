@@ -1,313 +1,240 @@
-import Link from 'next/link';
-import { Suspense } from 'react';
-import prisma from '@/lib/db';
-import { logServerDebug, logServerError } from '@/lib/server-log';
-import AdPlaceholder from '@/components/ad-placeholder';
-import CategoryIcon from '@/components/category-icon';
-import ArticleCard from '@/components/article-card';
-import RecentArticles from '@/components/recent-articles';
-import RecentArticlesSkeleton from '@/components/recent-articles-skeleton';
-import NewsletterForm from '@/components/newsletter-form';
-import { ArrowRight, Calendar, MapPin, Sparkles, Waves } from 'lucide-react';
+import Link from "next/link";
+import { ArrowRight, Compass, FolderKanban, ShieldCheck, Sparkles } from "lucide-react";
+import AdPlaceholder from "@/components/ad-placeholder";
+import ArticleCard from "@/components/article-card";
+import CategoryIcon from "@/components/category-icon";
+import { getCategoriesWithCounts, getFeaturedArticles, getLatestArticles } from "@/lib/content";
 
-export const dynamic = "force-dynamic";
-
-interface Article {
-  id: string;
-  title: string;
-  slug: string;
-  summary: string;
-  imageUrl: string | null;
-  createdAt: Date;
-  category: { name: string; slug: string };
-}
-
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  description: string | null;
-  icon: string | null;
-  _count: { articles: number };
-}
-
-async function getFeaturedArticles(): Promise<Article[]> {
-  try {
-    const articles = await prisma.article.findMany({
-      where: { isFeatured: true },
-      include: { category: { select: { name: true, slug: true } } },
-      orderBy: { createdAt: 'desc' },
-      take: 4,
-    });
-
-    logServerDebug('app/home', 'Fetched featured articles', {
-      count: articles.length,
-    });
-
-    return articles as Article[];
-  } catch (error) {
-    logServerError('app/home', 'Failed to fetch featured articles', error);
-    return [];
-  }
-}
-
-async function getCategories(): Promise<Category[]> {
-  try {
-    const categories = await prisma.category.findMany({
-      orderBy: { order: 'asc' },
-      include: { _count: { select: { articles: true } } },
-    });
-
-    logServerDebug('app/home', 'Fetched categories', {
-      count: categories.length,
-    });
-
-    return categories as Category[];
-  } catch (error) {
-    logServerError('app/home', 'Failed to fetch categories', error);
-    return [];
-  }
-}
-
-export default async function HomePage() {
-  const [featuredArticles, categories] = await Promise.all([
-    getFeaturedArticles(),
-    getCategories(),
-  ]);
-
-  const heroArticle = featuredArticles?.[0];
-  const otherFeatured = featuredArticles?.slice?.(1, 4) ?? [];
-  const totalArticles = categories?.reduce?.(
-    (sum, category) => sum + (category?._count?.articles ?? 0),
-    0
-  ) ?? 0;
-  const popularCategories = [...(categories ?? [])]
-    .sort((a, b) => (b?._count?.articles ?? 0) - (a?._count?.articles ?? 0))
-    .slice(0, 4);
+export default function HomePage() {
+  const featuredArticles = getFeaturedArticles(4);
+  const latestArticles = getLatestArticles(6);
+  const categories = getCategoriesWithCounts();
+  const heroArticle = featuredArticles[0];
+  const secondaryFeatured = featuredArticles.slice(1);
 
   return (
-    <div className="pt-16">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-hero text-white">
-        <div className="absolute -top-32 right-[-10%] h-72 w-72 rounded-full bg-white/10 blur-3xl" />
-        <div className="absolute bottom-[-20%] left-[-10%] h-80 w-80 rounded-full bg-white/10 blur-3xl" />
+    <div className="bg-white">
+      <section className="border-b border-slate-200 bg-[radial-gradient(circle_at_top_left,_rgba(14,165,233,0.16),_transparent_35%),radial-gradient(circle_at_top_right,_rgba(15,118,110,0.14),_transparent_30%),linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)]">
+        <div className="mx-auto grid max-w-7xl gap-10 px-4 py-14 md:py-20 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sky-700">
+              Muğla için içerik odaklı yayın
+            </p>
+            <h1 className="mt-4 max-w-4xl font-display text-4xl font-semibold tracking-tight text-slate-950 md:text-6xl">
+              Muğla'yı kısa tanıtımlarla değil, karar verdiren gerçek rehber içeriklerle keşfedin.
+            </h1>
+            <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-600">
+              Keşfet Muğla; ilçe, plaj, kamp, doğa, tarih ve yerel mutfak başlıklarında
+              rota kurmayı kolaylaştıran uzun form içerikler yayınlar. Amaç, ziyaretçiyi
+              yalnızca bir yere göndermek değil; o yeri nasıl deneyimlemesi gerektiğini de anlatmaktır.
+            </p>
 
-        <div className="relative z-10 max-w-6xl mx-auto px-4 py-16 md:py-24">
-          <div className="grid items-center gap-10 lg:grid-cols-[1.1fr_0.9fr]">
-            <div>
-              <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white/80">
-                <Sparkles className="h-4 w-4" />
-                Ege & Akdeniz Rehberi
-              </span>
-              <h1 className="mt-4 text-4xl md:text-5xl font-display font-semibold leading-tight">
-                Muğla'yı yerel lezzetler, saklı koylar ve güçlü rotalarla keşfedin.
-              </h1>
-              <p className="mt-4 text-lg text-white/90">
-                Bodrum, Fethiye, Marmaris ve daha fazlası... Tatilinizi planlarken ihtiyacınız olan tüm öneriler tek yerde.
-              </p>
-
-              <div className="mt-6 flex flex-wrap gap-3">
-                <Link
-                  href="/kategori/gezilecek-yerler"
-                  className="rounded-full bg-white px-5 py-2.5 text-sm font-semibold text-sky-700 shadow-sm transition hover:-translate-y-0.5 hover:bg-white/90"
-                >
-                  Gezilecek Yerler
-                </Link>
-                <Link
-                  href="/kategori/plajlar"
-                  className="rounded-full border border-white/40 px-5 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-white/10"
-                >
-                  Plajlar
-                </Link>
-                <Link
-                  href="#populer-kategoriler"
-                  className="rounded-full border border-white/40 px-5 py-2.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-white/10"
-                >
-                  Haritada Keşfet
-                </Link>
-              </div>
-
-              <div className="mt-8 flex flex-wrap gap-6 text-sm text-white/80">
-                <span className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4" />
-                  {categories?.length ?? 0} kategori
-                </span>
-                <span className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  {totalArticles} içerik
-                </span>
-                <span className="flex items-center gap-2">
-                  <Waves className="h-4 w-4" />
-                  Güncel sezon önerileri
-                </span>
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-white/20 bg-white/10 p-6 shadow-xl backdrop-blur-sm">
-              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/70">Hızlı Rotalar</p>
-              <div className="mt-4 space-y-3">
-                {popularCategories?.map?.((category) => (
-                  <Link
-                    key={category?.id ?? ''}
-                    href={`/kategori/${category?.slug ?? ''}`}
-                    className="flex items-center justify-between rounded-xl bg-white/10 px-4 py-3 transition hover:bg-white/20"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-white/15 text-white">
-                        <CategoryIcon icon={category?.icon ?? ''} className="h-4 w-4" />
-                      </span>
-                      <div>
-                        <p className="text-sm font-semibold text-white">{category?.name ?? ''}</p>
-                        <p className="text-xs text-white/70">{category?._count?.articles ?? 0} içerik</p>
-                      </div>
-                    </div>
-                    <ArrowRight className="h-4 w-4 text-white/70" />
-                  </Link>
-                )) ?? null}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Ad Banner */}
-      <div className="max-w-6xl mx-auto px-4 -mt-8 relative z-10">
-        <AdPlaceholder size="banner" />
-      </div>
-
-      {/* Featured Articles */}
-      <section className="py-12">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-semibold text-slate-900 flex items-center gap-2">
-              <Waves className="w-6 h-6 text-sky-500" />
-              Öne Çıkan Yazılar
-            </h2>
-            <Link
-              href="/kategori/gezilecek-yerler"
-              className="text-sm font-semibold text-sky-600 hover:text-sky-700 inline-flex items-center gap-1"
-            >
-              Tümünü Gör
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-6">
-            {heroArticle && (
-              <ArticleCard
-                variant="hero"
-                href={`/makale/${heroArticle?.slug ?? ''}`}
-                title={heroArticle?.title ?? ''}
-                summary={heroArticle?.summary ?? ''}
-                imageUrl={heroArticle?.imageUrl ?? ''}
-                category={heroArticle?.category ?? null}
-                date={heroArticle?.createdAt ? heroArticle?.createdAt?.toISOString?.() : ''}
-              />
-            )}
-
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
-              {otherFeatured?.map?.((article: Article) => (
-                <ArticleCard
-                  key={article?.id ?? ''}
-                  variant="compact"
-                  href={`/makale/${article?.slug ?? ''}`}
-                  title={article?.title ?? ''}
-                  summary={article?.summary ?? ''}
-                  imageUrl={article?.imageUrl ?? ''}
-                  category={article?.category ?? null}
-                  date={article?.createdAt ? article?.createdAt?.toISOString?.() : ''}
-                />
-              )) ?? null}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Popular Categories */}
-      <section id="populer-kategoriler" className="py-12 bg-slate-50">
-        <div className="max-w-6xl mx-auto px-4">
-          <h2 className="text-2xl font-semibold text-slate-900 mb-6 flex items-center gap-2">
-            <MapPin className="w-6 h-6 text-sky-500" />
-            Popüler Kategoriler
-          </h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {categories?.map?.((category: Category) => (
+            <div className="mt-8 flex flex-wrap gap-3">
               <Link
-                key={category?.id ?? ''}
-                href={`/kategori/${category?.slug ?? ''}`}
-                className="group rounded-2xl border border-slate-100 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+                href="/kategori/gezilecek-yerler"
+                className="inline-flex items-center rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white hover:bg-slate-800"
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-sky-50 text-sky-500 transition group-hover:bg-sky-600 group-hover:text-white">
-                    <CategoryIcon icon={category?.icon ?? ''} className="w-6 h-6" />
-                  </div>
-                  <span className="text-xs font-semibold text-slate-400">{category?._count?.articles ?? 0} içerik</span>
-                </div>
-                <h3 className="mt-4 text-lg font-semibold text-slate-900">{category?.name ?? ''}</h3>
-                <p className="mt-2 text-sm text-slate-500 line-clamp-2">{category?.description ?? ''}</p>
-                <span className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-sky-600">
-                  Keşfet <ArrowRight className="w-4 h-4" />
-                </span>
+                Rehberleri keşfet
               </Link>
-            )) ?? null}
-          </div>
-        </div>
-      </section>
+              <Link
+                href="/kategori/ilceler"
+                className="inline-flex items-center rounded-full border border-slate-200 px-5 py-3 text-sm font-medium text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+              >
+                İlçe içeriklerine git
+              </Link>
+            </div>
 
-      {/* Inline Ad */}
-      <div className="max-w-6xl mx-auto px-4">
-        <AdPlaceholder size="inline" />
-      </div>
-
-      {/* Recent Articles */}
-      <section className="py-12">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-semibold text-slate-900 flex items-center gap-2">
-              <Calendar className="w-6 h-6 text-sky-500" />
-              Son Eklenenler
-            </h2>
-            <Link
-              href="/kategori/gezilecek-yerler"
-              className="text-sm font-semibold text-sky-600 hover:text-sky-700 inline-flex items-center gap-1"
-            >
-              Tüm Yazılar
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          <Suspense fallback={<RecentArticlesSkeleton />}>
-            <RecentArticles />
-          </Suspense>
-        </div>
-      </section>
-
-      {/* Newsletter */}
-      <section className="py-12">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="relative overflow-hidden rounded-3xl bg-slate-900 text-white shadow-xl">
-            <div className="absolute -top-24 right-[-10%] h-48 w-48 rounded-full bg-sky-500/30 blur-3xl" />
-            <div className="absolute bottom-[-20%] left-[-10%] h-56 w-56 rounded-full bg-emerald-400/30 blur-3xl" />
-            <div className="relative z-10 grid gap-8 p-8 md:p-12 lg:grid-cols-[1.1fr_0.9fr] items-center">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/60">Bülten</p>
-                <h3 className="mt-3 text-2xl md:text-3xl font-display font-semibold">
-                  En iyi rotalar, en iyi zamanlar ve özel öneriler.
-                </h3>
-                <p className="mt-3 text-sm text-white/80">
-                  Haftalık Muğla rehberi ile yeni eklenen içerikleri, sezon tavsiyelerini ve fırsatları kaçırmayın.
-                </p>
+            <div className="mt-8 grid gap-4 sm:grid-cols-3">
+              <div className="rounded-[1.5rem] border border-slate-200 bg-white px-5 py-4">
+                <p className="text-2xl font-semibold text-slate-950">{categories.length}</p>
+                <p className="mt-1 text-sm text-slate-500">Ana kategori</p>
               </div>
-              <NewsletterForm />
+              <div className="rounded-[1.5rem] border border-slate-200 bg-white px-5 py-4">
+                <p className="text-2xl font-semibold text-slate-950">{latestArticles.length}+</p>
+                <p className="mt-1 text-sm text-slate-500">Yayında rehber</p>
+              </div>
+              <div className="rounded-[1.5rem] border border-slate-200 bg-white px-5 py-4">
+                <p className="text-2xl font-semibold text-slate-950">1200+</p>
+                <p className="mt-1 text-sm text-slate-500">Kelime hedefi / makale</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid gap-4">
+            <div className="rounded-[2rem] border border-slate-200 bg-white p-6 shadow-sm">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">
+                Muğla hakkında kısa giriş
+              </p>
+              <p className="mt-4 text-base leading-8 text-slate-600">
+                Muğla; tek bir tatil karakteri sunmaz. Fethiye daha görsel ve açık hava odaklı
+                bir ritim verirken, Akyaka daha sakin ve dengeli ilerler. Datça yarımadası seçilmiş
+                koylarla yavaşlamayı, Bodrum ise farklı sahil profilleri arasında bilinçli seçim yapmayı ister.
+                Bu site, tam olarak bu farkları görünür kılmak için kurgulandı.
+              </p>
+            </div>
+
+            <div className="rounded-[2rem] border border-slate-200 bg-slate-950 p-6 text-white shadow-sm">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                Neden bu site?
+              </p>
+              <ul className="mt-4 space-y-4 text-sm leading-7 text-slate-300">
+                <li className="flex gap-3">
+                  <ShieldCheck className="mt-1 h-5 w-5 flex-none text-emerald-400" />
+                  Kısa, tekrar eden tanıtım metinleri yerine plan yaptıran uzun rehberler.
+                </li>
+                <li className="flex gap-3">
+                  <FolderKanban className="mt-1 h-5 w-5 flex-none text-sky-400" />
+                  Kategori ve iç link yapısı sayesinde içerikler birbirini tamamlar.
+                </li>
+                <li className="flex gap-3">
+                  <Sparkles className="mt-1 h-5 w-5 flex-none text-amber-300" />
+                  Reklamdan önce içerik, hacimden önce kalite yaklaşımı.
+                </li>
+              </ul>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Footer Ad */}
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <AdPlaceholder size="footer" />
+      <div className="mx-auto max-w-7xl px-4 py-8">
+        <AdPlaceholder
+          size="banner"
+          label="Ana sayfa üstü reklam yerleşimi için ayrılmış dengeli alan. İçerik akışını bölmeden ileride AdSense entegrasyonuna uygun şekilde kullanılabilir."
+        />
+      </div>
+
+      <section className="mx-auto max-w-7xl px-4 py-8 md:py-10">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">Öne çıkan içerikler</p>
+            <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
+              Rehber niteliği yüksek seçilmiş yayınlar
+            </h2>
+          </div>
+          <Link href="/kategori/gezilecek-yerler" className="hidden text-sm font-medium text-slate-700 hover:text-sky-700 md:inline-flex md:items-center md:gap-2">
+            Tüm içerikleri incele
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+
+        <div className="mt-8 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+          {heroArticle ? <ArticleCard article={heroArticle} variant="hero" /> : null}
+          <div className="grid gap-4">
+            {secondaryFeatured.map((article) => (
+              <ArticleCard key={article.slug} article={article} variant="compact" />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="border-y border-slate-200 bg-slate-50">
+        <div className="mx-auto max-w-7xl px-4 py-12 md:py-14">
+          <div className="max-w-3xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">Popüler kategoriler</p>
+            <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
+              İçerik keşfini kolaylaştıran net kategori yapısı
+            </h2>
+            <p className="mt-4 text-base leading-8 text-slate-600">
+              Kategoriler yalnızca etiket işlevi görmez; her biri kendi giriş metni, içerik mantığı ve
+              rehber dili ile ayrı bir yayın alanı gibi çalışır.
+            </p>
+          </div>
+
+          <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+            {categories.map((category) => (
+              <Link
+                key={category.slug}
+                href={`/kategori/${category.slug}`}
+                className="rounded-[1.75rem] border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-900">
+                    <CategoryIcon icon={category.icon} className="h-5 w-5" />
+                  </span>
+                  <span className="text-sm font-medium text-slate-500">
+                    {category.articleCount} içerik
+                  </span>
+                </div>
+                <h3 className="mt-5 text-xl font-semibold tracking-tight text-slate-950">
+                  {category.name}
+                </h3>
+                <p className="mt-3 text-sm leading-7 text-slate-600">
+                  {category.description}
+                </p>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-4 py-12">
+        <div className="grid gap-5 md:grid-cols-3">
+          <div className="rounded-[2rem] border border-slate-200 bg-white p-6">
+            <Compass className="h-6 w-6 text-sky-700" />
+            <h3 className="mt-4 text-xl font-semibold tracking-tight text-slate-950">
+              Kopya değil, rehber mantığı
+            </h3>
+            <p className="mt-3 text-sm leading-7 text-slate-600">
+              İçeriklerde yalnızca “güzel yer” demiyoruz; ulaşım, uygun ziyaretçi profili,
+              yoğun saatler ve rota akışı gibi karar verdiren bilgileri öne çıkarıyoruz.
+            </p>
+          </div>
+          <div className="rounded-[2rem] border border-slate-200 bg-white p-6">
+            <ShieldCheck className="h-6 w-6 text-sky-700" />
+            <h3 className="mt-4 text-xl font-semibold tracking-tight text-slate-950">
+              Güven sinyalleri güçlü
+            </h3>
+            <p className="mt-3 text-sm leading-7 text-slate-600">
+              Kurumsal sayfalar, net navigasyon, arama altyapısı, teknik SEO düzeni ve anlamlı
+              içerik hiyerarşisi siteyi gerçek yayın mantığına yaklaştırır.
+            </p>
+          </div>
+          <div className="rounded-[2rem] border border-slate-200 bg-white p-6">
+            <FolderKanban className="h-6 w-6 text-sky-700" />
+            <h3 className="mt-4 text-xl font-semibold tracking-tight text-slate-950">
+              İçerikler birbirine bağlı
+            </h3>
+            <p className="mt-3 text-sm leading-7 text-slate-600">
+              Benzer yazılar, kategori bağlantıları ve bütünsel rota önerileri sayesinde kullanıcı
+              tek bir sayfada kalmaz; sitede doğal biçimde ilerler.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <div className="mx-auto max-w-7xl px-4 pb-6">
+        <AdPlaceholder
+          size="inline"
+          label="İçerik akışı içinde kullanılabilecek doğal reklam alanı. Yalnızca ileride ve içerik yoğunluğu korunarak değerlendirilmelidir."
+        />
+      </div>
+
+      <section className="mx-auto max-w-7xl px-4 py-8 md:py-12">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">Son eklenen yazılar</p>
+            <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
+              Güncel editöryel içerikler
+            </h2>
+          </div>
+          <Link href="/kategori/ilceler" className="hidden text-sm font-medium text-slate-700 hover:text-sky-700 md:inline-flex md:items-center md:gap-2">
+            İlçe rehberlerine git
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+
+        <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+          {latestArticles.map((article) => (
+            <ArticleCard key={article.slug} article={article} />
+          ))}
+        </div>
+      </section>
+
+      <div className="mx-auto max-w-7xl px-4 pb-12">
+        <AdPlaceholder
+          size="footer"
+          label="Sayfa sonu reklam alanı için ayrılmış bölüm. İçerik özetini ve ilgili yazıları gölgelemeyecek biçimde tasarlanmıştır."
+        />
       </div>
     </div>
   );
