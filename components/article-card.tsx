@@ -17,6 +17,10 @@ const variants: Record<Variant, string> = {
   compact: "grid gap-4 rounded-[1.5rem] border border-slate-200 bg-white p-4 md:grid-cols-[120px_1fr]",
 };
 
+function isSvgSource(src: string) {
+  return src.toLowerCase().split("?")[0].endsWith(".svg");
+}
+
 function formatDate(value: string) {
   return new Date(value).toLocaleDateString("tr-TR", {
     day: "numeric",
@@ -32,6 +36,12 @@ export default function ArticleCard({
   const isCompact = variant === "compact";
   const isRow = variant === "row";
   const isHero = variant === "hero";
+  const isIllustration = isSvgSource(article.image);
+  const imageClassName = isIllustration
+    ? isCompact
+      ? "object-contain p-2"
+      : "object-contain p-4 md:p-6"
+    : "object-cover";
 
   return (
     <article className={variants[variant]}>
@@ -53,12 +63,12 @@ export default function ArticleCard({
                 ? "(min-width: 768px) 320px, 100vw"
                 : isCompact
                   ? "120px"
-                  : "(min-width: 1024px) 33vw, 100vw"
+                : "(min-width: 1024px) 33vw, 100vw"
           }
-          className="object-cover"
+          className={imageClassName}
           priority={isHero}
         />
-        {!isCompact ? (
+        {!isCompact && !isIllustration ? (
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/55 to-transparent" />
         ) : null}
         <div className="absolute left-4 top-4">

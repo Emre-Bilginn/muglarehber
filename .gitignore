@@ -2,7 +2,9 @@ node_modules
 .next
 .build
 .build-image-check
+.build-*
 .next-build-check
+.next-*
 .env
 tsconfig.tsbuildinfo
 .abacus.donotdelete

@@ -29,6 +29,10 @@ type ArticlePageProps = {
   };
 };
 
+function isSvgSource(src: string) {
+  return src.toLowerCase().split("?")[0].endsWith(".svg");
+}
+
 const quickFactLabels = {
   idealSeason: "En iyi dönem",
   visitDuration: "Önerilen süre",
@@ -81,6 +85,7 @@ export default function ArticlePage({ params }: ArticlePageProps) {
 
   const relatedArticles = getRelatedArticles(article, 3);
   const { previous, next } = getPrevNextArticles(article);
+  const isIllustration = isSvgSource(article.image);
   const breadcrumbItems = [
     { label: "Ana sayfa", href: "/" },
     { label: article.category.name, href: `/kategori/${article.category.slug}` },
@@ -157,7 +162,7 @@ export default function ArticlePage({ params }: ArticlePageProps) {
                 fill
                 priority
                 sizes="(min-width: 1024px) 42vw, 100vw"
-                className="object-cover"
+                className={isIllustration ? "object-contain p-6" : "object-cover"}
               />
             </div>
           </div>

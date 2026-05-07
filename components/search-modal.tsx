@@ -14,6 +14,10 @@ type SearchResult = {
   category: { name: string; slug: string };
 };
 
+function isSvgSource(src: string) {
+  return src.toLowerCase().split("?")[0].endsWith(".svg");
+}
+
 export default function SearchModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -102,35 +106,39 @@ export default function SearchModal() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {results.map((result) => (
-                    <Link
-                      key={result.slug}
-                      href={`/makale/${result.slug}`}
-                      onClick={() => setIsOpen(false)}
-                      className="grid gap-4 rounded-[1.5rem] border border-slate-200 p-4 hover:border-sky-200 hover:bg-sky-50/40 md:grid-cols-[140px_1fr]"
-                    >
-                      <div className="relative aspect-[4/3] overflow-hidden rounded-[1rem] bg-slate-100">
-                        <ImageWithFallback
-                          src={result.image}
-                          alt={result.imageAlt}
-                          fill
-                          sizes="140px"
-                          className="object-cover"
-                        />
-                      </div>
-                      <div>
-                        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">
-                          {result.category.name}
-                        </p>
-                        <h3 className="mt-2 text-lg font-semibold tracking-tight text-slate-950">
-                          {result.title}
-                        </h3>
-                        <p className="mt-2 text-sm leading-7 text-slate-600">
-                          {result.excerpt}
-                        </p>
-                      </div>
-                    </Link>
-                  ))}
+                  {results.map((result) => {
+                    const isIllustration = isSvgSource(result.image);
+
+                    return (
+                      <Link
+                        key={result.slug}
+                        href={`/makale/${result.slug}`}
+                        onClick={() => setIsOpen(false)}
+                        className="grid gap-4 rounded-[1.5rem] border border-slate-200 p-4 hover:border-sky-200 hover:bg-sky-50/40 md:grid-cols-[140px_1fr]"
+                      >
+                        <div className="relative aspect-[4/3] overflow-hidden rounded-[1rem] bg-slate-100">
+                          <ImageWithFallback
+                            src={result.image}
+                            alt={result.imageAlt}
+                            fill
+                            sizes="140px"
+                            className={isIllustration ? "object-contain p-2" : "object-cover"}
+                          />
+                        </div>
+                        <div>
+                          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">
+                            {result.category.name}
+                          </p>
+                          <h3 className="mt-2 text-lg font-semibold tracking-tight text-slate-950">
+                            {result.title}
+                          </h3>
+                          <p className="mt-2 text-sm leading-7 text-slate-600">
+                            {result.excerpt}
+                          </p>
+                        </div>
+                      </Link>
+                    );
+                  })}
                 </div>
               )}
             </div>
