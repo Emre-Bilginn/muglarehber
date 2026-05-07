@@ -1,7 +1,7 @@
 'use client';
 
 import Image, { ImageProps } from 'next/image';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface ImageWithFallbackProps extends Omit<ImageProps, 'src'> {
   src?: string | null;
@@ -31,35 +31,6 @@ export default function ImageWithFallback({
     setCurrentSrc(src && src.trim() ? src : fallbackSrc);
   }, [src, fallbackSrc]);
 
-  const shouldUseNativeImage = useMemo(() => isSvgSource(currentSrc), [currentSrc]);
-
-  if (shouldUseNativeImage) {
-    return (
-      <img
-        src={currentSrc}
-        alt={alt}
-        className={className}
-        sizes={sizes}
-        onError={() => {
-          if (currentSrc !== fallbackSrc) {
-            setCurrentSrc(fallbackSrc);
-          }
-        }}
-        style={
-          fill
-            ? {
-                position: 'absolute',
-                inset: 0,
-                width: '100%',
-                height: '100%',
-                ...(style ?? {}),
-              }
-            : style
-        }
-      />
-    );
-  }
-
   return (
     <Image
       {...props}
@@ -69,6 +40,7 @@ export default function ImageWithFallback({
       sizes={sizes}
       style={style}
       src={currentSrc}
+      unoptimized={props.unoptimized ?? isSvgSource(currentSrc)}
       onError={() => {
         if (currentSrc !== fallbackSrc) {
           setCurrentSrc(fallbackSrc);

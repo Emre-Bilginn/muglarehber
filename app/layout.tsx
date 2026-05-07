@@ -42,7 +42,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="tr">
-      <body className={`${manrope.variable} ${fraunces.variable} bg-stone-50 font-sans text-slate-900`}>
+      <body
+        className={`${manrope.variable} ${fraunces.variable} bg-stone-50 font-sans text-slate-900`}
+      >
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{

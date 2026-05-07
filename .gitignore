@@ -1,8 +1,12 @@
 node_modules
 .next
+.build
+.build-image-check
+.next-build-check
 .env
 tsconfig.tsbuildinfo
 .abacus.donotdelete
 .yarn/cache
 .yarn/unplugged
 .yarn/install-state.gz
+*.log
