@@ -2,6 +2,14 @@
   "files.associations": {
     "*.css": "tailwindcss"
   },
+  "files.exclude": {
+    "**/.build": true,
+    "**/.build-*": true,
+    "**/.next": true,
+    "**/.next-*": true,
+    "**/node_modules": true,
+    "**/*.log": true
+  },
   "typescript.tsdk": "node_modules/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "css.lint.unknownAtRules": "ignore",
