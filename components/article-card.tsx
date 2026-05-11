@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { CalendarDays, Clock3, ArrowUpRight } from "lucide-react";
+import SafeImage from "@/components/ui/safe-image";
 import type { GuideArticle } from "@/lib/content";
-import ImageWithFallback from "@/components/image-with-fallback";
+import { isSvgImage } from "@/lib/image-utils";
 
 type Variant = "hero" | "default" | "row" | "compact";
 
@@ -16,10 +17,6 @@ const variants: Record<Variant, string> = {
   row: "grid overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-sm md:grid-cols-[320px_1fr]",
   compact: "grid gap-4 rounded-[1.5rem] border border-slate-200 bg-white p-4 md:grid-cols-[120px_1fr]",
 };
-
-function isSvgSource(src: string) {
-  return src.toLowerCase().split("?")[0].endsWith(".svg");
-}
 
 function formatDate(value: string) {
   return new Date(value).toLocaleDateString("tr-TR", {
@@ -36,23 +33,24 @@ export default function ArticleCard({
   const isCompact = variant === "compact";
   const isRow = variant === "row";
   const isHero = variant === "hero";
-  const isIllustration = isSvgSource(article.image);
+  const isIllustration = isSvgImage(article.image);
   const imageClassName = isIllustration
     ? isCompact
       ? "object-contain p-2"
       : "object-contain p-4 md:p-6"
     : "object-cover";
+  const imageWrapperClassName = isCompact
+    ? "relative aspect-[4/3] overflow-hidden rounded-[1rem] bg-slate-100"
+    : isHero
+      ? "relative aspect-[16/10] overflow-hidden bg-slate-100 lg:min-h-[320px]"
+      : isRow
+        ? "relative aspect-[16/10] overflow-hidden bg-slate-100 md:min-h-[240px]"
+        : "relative aspect-[16/10] overflow-hidden bg-slate-100";
 
   return (
     <article className={variants[variant]}>
-      <div
-        className={
-          isCompact
-            ? "relative aspect-[4/3] overflow-hidden rounded-[1rem]"
-            : "relative min-h-[240px] overflow-hidden bg-slate-100"
-        }
-      >
-        <ImageWithFallback
+      <div className={imageWrapperClassName}>
+        <SafeImage
           src={article.image}
           alt={article.imageAlt}
           fill
@@ -66,6 +64,7 @@ export default function ArticleCard({
                 : "(min-width: 1024px) 33vw, 100vw"
           }
           className={imageClassName}
+          debugLabel={`article-card:${article.slug}`}
           priority={isHero}
         />
         {!isCompact && !isIllustration ? (

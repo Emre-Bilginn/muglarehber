@@ -1,5 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import SafeImage from "@/components/ui/safe-image";
+import { isSvgImage } from "@/lib/image-utils";
 
 function slugifyHeading(value: string) {
   return value
@@ -57,6 +59,20 @@ function renderInline(value: string) {
   }
 
   return result;
+}
+
+function parseImageLine(value: string) {
+  const match = value.match(/^!\[(?<alt>[^\]]*)\]\((?<src>[^)\s]+)(?:\s+"(?<title>[^"]+)")?\)$/);
+
+  if (!match?.groups?.src) {
+    return null;
+  }
+
+  return {
+    alt: match.groups.alt ?? "",
+    src: match.groups.src,
+    title: match.groups.title ?? "",
+  };
 }
 
 export default function MarkdownContent({ content }: { content: string }) {
@@ -161,6 +177,36 @@ export default function MarkdownContent({ content }: { content: string }) {
       return;
     }
 
+    const image = parseImageLine(line);
+    if (image) {
+      flushAll();
+
+      blocks.push(
+        <figure
+          key={`image-${index}`}
+          className="overflow-hidden rounded-[2rem] border border-slate-200 bg-slate-50"
+        >
+          <div className="relative aspect-[16/9] overflow-hidden bg-slate-100">
+            <SafeImage
+              src={image.src}
+              alt={image.alt || image.title || "Makale görseli"}
+              fill
+              sizes="(min-width: 1024px) 760px, 100vw"
+              className={isSvgImage(image.src) ? "object-contain p-6" : "object-cover"}
+              debugLabel={`markdown:${image.src}`}
+            />
+          </div>
+          {(image.title || image.alt) ? (
+            <figcaption className="border-t border-slate-200 px-5 py-4 text-sm leading-7 text-slate-500">
+              {image.title || image.alt}
+            </figcaption>
+          ) : null}
+        </figure>,
+      );
+
+      return;
+    }
+
     if (line.startsWith("- ")) {
       flushParagraph();
       flushQuote();
@@ -184,4 +230,3 @@ export default function MarkdownContent({ content }: { content: string }) {
 
   return <div className="space-y-6">{blocks}</div>;
 }
-

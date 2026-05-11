@@ -9,11 +9,11 @@ import {
 } from "lucide-react";
 import AdPlaceholder from "@/components/ad-placeholder";
 import ArticleCard from "@/components/article-card";
-import ImageWithFallback from "@/components/image-with-fallback";
 import MarkdownContent from "@/components/markdown-content";
 import ShareLinks from "@/components/share-links";
 import SiteBreadcrumbs from "@/components/site-breadcrumbs";
 import TableOfContents from "@/components/table-of-contents";
+import SafeImage from "@/components/ui/safe-image";
 import { articleSchema, breadcrumbSchema, buildMetadata } from "@/lib/seo";
 import {
   getAllArticles,
@@ -21,6 +21,7 @@ import {
   getPrevNextArticles,
   getRelatedArticles,
 } from "@/lib/content";
+import { isSvgImage } from "@/lib/image-utils";
 import { absoluteUrl } from "@/lib/site-config";
 
 type ArticlePageProps = {
@@ -28,10 +29,6 @@ type ArticlePageProps = {
     slug: string;
   };
 };
-
-function isSvgSource(src: string) {
-  return src.toLowerCase().split("?")[0].endsWith(".svg");
-}
 
 const quickFactLabels = {
   idealSeason: "En iyi dönem",
@@ -85,7 +82,7 @@ export default function ArticlePage({ params }: ArticlePageProps) {
 
   const relatedArticles = getRelatedArticles(article, 3);
   const { previous, next } = getPrevNextArticles(article);
-  const isIllustration = isSvgSource(article.image);
+  const isIllustration = isSvgImage(article.image);
   const breadcrumbItems = [
     { label: "Ana sayfa", href: "/" },
     { label: article.category.name, href: `/kategori/${article.category.slug}` },
@@ -155,14 +152,15 @@ export default function ArticlePage({ params }: ArticlePageProps) {
               </div>
             </div>
 
-            <div className="relative min-h-[320px] overflow-hidden rounded-[2.25rem] border border-slate-200 bg-slate-100 shadow-sm">
-              <ImageWithFallback
+            <div className="relative aspect-[16/10] min-h-[320px] overflow-hidden rounded-[2.25rem] border border-slate-200 bg-slate-100 shadow-sm">
+              <SafeImage
                 src={article.image}
                 alt={article.imageAlt}
                 fill
                 priority
                 sizes="(min-width: 1024px) 42vw, 100vw"
                 className={isIllustration ? "object-contain p-6" : "object-cover"}
+                debugLabel={`article-hero:${article.slug}`}
               />
             </div>
           </div>

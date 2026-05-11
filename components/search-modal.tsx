@@ -3,20 +3,17 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Loader2, Search, X } from "lucide-react";
-import ImageWithFallback from "@/components/image-with-fallback";
+import SafeImage from "@/components/ui/safe-image";
+import { isSvgImage } from "@/lib/image-utils";
 
 type SearchResult = {
   slug: string;
   title: string;
   excerpt: string;
-  image: string;
-  imageAlt: string;
+  image?: string | null;
+  imageAlt?: string | null;
   category: { name: string; slug: string };
 };
-
-function isSvgSource(src: string) {
-  return src.toLowerCase().split("?")[0].endsWith(".svg");
-}
 
 export default function SearchModal() {
   const [isOpen, setIsOpen] = useState(false);
@@ -107,7 +104,7 @@ export default function SearchModal() {
               ) : (
                 <div className="space-y-3">
                   {results.map((result) => {
-                    const isIllustration = isSvgSource(result.image);
+                    const isIllustration = isSvgImage(result.image);
 
                     return (
                       <Link
@@ -117,12 +114,13 @@ export default function SearchModal() {
                         className="grid gap-4 rounded-[1.5rem] border border-slate-200 p-4 hover:border-sky-200 hover:bg-sky-50/40 md:grid-cols-[140px_1fr]"
                       >
                         <div className="relative aspect-[4/3] overflow-hidden rounded-[1rem] bg-slate-100">
-                          <ImageWithFallback
+                          <SafeImage
                             src={result.image}
-                            alt={result.imageAlt}
+                            alt={result.imageAlt ?? `${result.title} kapak görseli`}
                             fill
                             sizes="140px"
                             className={isIllustration ? "object-contain p-2" : "object-cover"}
+                            debugLabel={`search-modal:${result.slug}`}
                           />
                         </div>
                         <div>

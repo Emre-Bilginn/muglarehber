@@ -2,6 +2,13 @@ import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
 import { cache } from "react";
+import {
+  getCategoryCoverImage,
+  isAllowedRemoteImage,
+  isLocalImageSrc,
+  logImageDebug,
+  normalizeImageSrc,
+} from "@/lib/image-utils";
 import { absoluteUrl } from "@/lib/site-config";
 
 export type CategorySlug =
@@ -44,8 +51,8 @@ type ArticleFrontmatter = {
   excerpt: string;
   category: CategorySlug;
   district?: string;
-  image: string;
-  imageAlt: string;
+  image?: string | null;
+  imageAlt?: string;
   publishedAt: string;
   updatedAt: string;
   author: string;
@@ -250,6 +257,30 @@ function getAuthor(slug: string) {
   return author;
 }
 
+function validateResolvedArticleImage(fileName: string, articleSlug: string, image: string) {
+  if (isLocalImageSrc(image)) {
+    const localPath = path.join(process.cwd(), "public", ...image.replace(/^\/+/, "").split("/"));
+
+    if (!fs.existsSync(localPath)) {
+      logImageDebug("content:missing-local-image", {
+        fileName,
+        slug: articleSlug,
+        image,
+      });
+    }
+
+    return;
+  }
+
+  if (!isAllowedRemoteImage(image)) {
+    logImageDebug("content:remote-host-not-allowlisted", {
+      fileName,
+      slug: articleSlug,
+      image,
+    });
+  }
+}
+
 function parseArticle(fileName: string): GuideArticle {
   const filePath = path.join(contentDirectory, fileName);
   const source = fs.readFileSync(filePath, "utf8");
@@ -258,8 +289,22 @@ function parseArticle(fileName: string): GuideArticle {
 
   const category = getCategory(frontmatter.category);
   const author = getAuthor(frontmatter.author);
+  const fallbackImage = getCategoryCoverImage(frontmatter.category);
+  const image = normalizeImageSrc(frontmatter.image, fallbackImage);
+  const imageAlt = frontmatter.imageAlt?.trim() || `${frontmatter.title} kapak görseli`;
   const body = content.trim();
   const wordCount = countWords(body);
+
+  if ((frontmatter.image ?? "").trim() !== image) {
+    logImageDebug("content:normalized-article-image", {
+      fileName,
+      slug: frontmatter.slug,
+      originalSrc: frontmatter.image ?? null,
+      resolvedSrc: image,
+    });
+  }
+
+  validateResolvedArticleImage(fileName, frontmatter.slug, image);
 
   return {
     title: frontmatter.title,
@@ -268,8 +313,8 @@ function parseArticle(fileName: string): GuideArticle {
     excerpt: frontmatter.excerpt,
     category,
     district: frontmatter.district,
-    image: frontmatter.image,
-    imageAlt: frontmatter.imageAlt,
+    image,
+    imageAlt,
     publishedAt: frontmatter.publishedAt,
     updatedAt: frontmatter.updatedAt,
     author,
