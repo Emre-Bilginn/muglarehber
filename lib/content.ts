@@ -3,11 +3,11 @@ import path from "node:path";
 import matter from "gray-matter";
 import { cache } from "react";
 import {
-  getCategoryCoverImage,
+  getCategoryFallbackImage,
   isAllowedRemoteImage,
   isLocalImageSrc,
   logImageDebug,
-  normalizeImageSrc,
+  resolveArticleImageData,
 } from "@/lib/image-utils";
 import { absoluteUrl } from "@/lib/site-config";
 
@@ -52,7 +52,14 @@ type ArticleFrontmatter = {
   category: CategorySlug;
   district?: string;
   image?: string | null;
+  coverImage?: string | null;
+  thumbnail?: string | null;
+  imageUrl?: string | null;
+  featuredImage?: string | null;
   imageAlt?: string;
+  coverImageAlt?: string;
+  thumbnailAlt?: string;
+  featuredImageAlt?: string;
   publishedAt: string;
   updatedAt: string;
   author: string;
@@ -257,7 +264,12 @@ function getAuthor(slug: string) {
   return author;
 }
 
-function validateResolvedArticleImage(fileName: string, articleSlug: string, image: string) {
+function ensureResolvedArticleImage(
+  fileName: string,
+  articleSlug: string,
+  image: string,
+  fallbackImage: string,
+) {
   if (isLocalImageSrc(image)) {
     const localPath = path.join(process.cwd(), "public", ...image.replace(/^\/+/, "").split("/"));
 
@@ -266,10 +278,13 @@ function validateResolvedArticleImage(fileName: string, articleSlug: string, ima
         fileName,
         slug: articleSlug,
         image,
+        fallbackImage,
       });
+
+      return fallbackImage;
     }
 
-    return;
+    return image;
   }
 
   if (!isAllowedRemoteImage(image)) {
@@ -277,8 +292,13 @@ function validateResolvedArticleImage(fileName: string, articleSlug: string, ima
       fileName,
       slug: articleSlug,
       image,
+      fallbackImage,
     });
+
+    return fallbackImage;
   }
+
+  return image;
 }
 
 function parseArticle(fileName: string): GuideArticle {
@@ -289,22 +309,37 @@ function parseArticle(fileName: string): GuideArticle {
 
   const category = getCategory(frontmatter.category);
   const author = getAuthor(frontmatter.author);
-  const fallbackImage = getCategoryCoverImage(frontmatter.category);
-  const image = normalizeImageSrc(frontmatter.image, fallbackImage);
+  const fallbackImage = getCategoryFallbackImage(frontmatter.category);
+  const resolvedImage = resolveArticleImageData({
+    title: frontmatter.title,
+    categorySlug: frontmatter.category,
+    categoryName: category.name,
+    image: frontmatter.image,
+    coverImage: frontmatter.coverImage,
+    thumbnail: frontmatter.thumbnail,
+    imageUrl: frontmatter.imageUrl,
+    featuredImage: frontmatter.featuredImage,
+    imageAlt: frontmatter.imageAlt,
+    coverImageAlt: frontmatter.coverImageAlt,
+    thumbnailAlt: frontmatter.thumbnailAlt,
+    featuredImageAlt: frontmatter.featuredImageAlt,
+  });
+  const image = ensureResolvedArticleImage(fileName, frontmatter.slug, resolvedImage.src, fallbackImage);
   const imageAlt = frontmatter.imageAlt?.trim() || `${frontmatter.title} kapak görseli`;
   const body = content.trim();
   const wordCount = countWords(body);
 
-  if ((frontmatter.image ?? "").trim() !== image) {
+  if ((resolvedImage.originalSrc ?? "").trim() !== image) {
     logImageDebug("content:normalized-article-image", {
       fileName,
       slug: frontmatter.slug,
-      originalSrc: frontmatter.image ?? null,
+      originalSrc: resolvedImage.originalSrc,
       resolvedSrc: image,
+      fallbackSrc: resolvedImage.fallbackSrc,
+      sourceField: resolvedImage.sourceField,
+      reason: resolvedImage.reason,
     });
   }
-
-  validateResolvedArticleImage(fileName, frontmatter.slug, image);
 
   return {
     title: frontmatter.title,
@@ -314,7 +349,7 @@ function parseArticle(fileName: string): GuideArticle {
     category,
     district: frontmatter.district,
     image,
-    imageAlt,
+    imageAlt: resolvedImage.alt,
     publishedAt: frontmatter.publishedAt,
     updatedAt: frontmatter.updatedAt,
     author,

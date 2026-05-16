@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Loader2, Search, X } from "lucide-react";
 import SafeImage from "@/components/ui/safe-image";
-import { isSvgImage } from "@/lib/image-utils";
+import { getCategoryFallbackImage, isSvgImage } from "@/lib/image-utils";
 
 type SearchResult = {
   slug: string;
@@ -105,6 +105,7 @@ export default function SearchModal() {
                 <div className="space-y-3">
                   {results.map((result) => {
                     const isIllustration = isSvgImage(result.image);
+                    const fallbackSrc = getCategoryFallbackImage(result.category.slug);
 
                     return (
                       <Link
@@ -116,6 +117,7 @@ export default function SearchModal() {
                         <div className="relative aspect-[4/3] overflow-hidden rounded-[1rem] bg-slate-100">
                           <SafeImage
                             src={result.image}
+                            fallbackSrc={fallbackSrc}
                             alt={result.imageAlt ?? `${result.title} kapak görseli`}
                             fill
                             sizes="140px"

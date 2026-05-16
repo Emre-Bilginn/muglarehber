@@ -21,7 +21,7 @@ import {
   getPrevNextArticles,
   getRelatedArticles,
 } from "@/lib/content";
-import { isSvgImage } from "@/lib/image-utils";
+import { getCategoryFallbackImage, isSvgImage } from "@/lib/image-utils";
 import { absoluteUrl } from "@/lib/site-config";
 
 type ArticlePageProps = {
@@ -83,6 +83,7 @@ export default function ArticlePage({ params }: ArticlePageProps) {
   const relatedArticles = getRelatedArticles(article, 3);
   const { previous, next } = getPrevNextArticles(article);
   const isIllustration = isSvgImage(article.image);
+  const fallbackSrc = getCategoryFallbackImage(article.category.slug);
   const breadcrumbItems = [
     { label: "Ana sayfa", href: "/" },
     { label: article.category.name, href: `/kategori/${article.category.slug}` },
@@ -155,6 +156,7 @@ export default function ArticlePage({ params }: ArticlePageProps) {
             <div className="relative aspect-[16/10] min-h-[320px] overflow-hidden rounded-[2.25rem] border border-slate-200 bg-slate-100 shadow-sm">
               <SafeImage
                 src={article.image}
+                fallbackSrc={fallbackSrc}
                 alt={article.imageAlt}
                 fill
                 priority

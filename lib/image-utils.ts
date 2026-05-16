@@ -5,7 +5,8 @@ type ImageIssueReason =
   | "missing-src"
   | "normalized-relative-src"
   | "same-origin-absolute-src"
-  | "remote-host-not-allowlisted";
+  | "remote-host-not-allowlisted"
+  | "upgraded-insecure-protocol";
 
 type ResolvedImageSource = {
   originalSrc: string | null;
@@ -24,6 +25,51 @@ const categoryCoverImages: Record<string, string> = {
   "tarihi-yerler": "/images/guides/tarihi-yerler-cover.svg",
   "doga-rotalari": "/images/guides/doga-rotalari-cover.svg",
   ilceler: "/images/guides/ilceler-cover.svg",
+};
+
+const categoryFallbackImages: Record<string, string> = {
+  "gezilecek-yerler": "/images/fallback-places.jpg",
+  plajlar: "/images/fallback-beaches.jpg",
+  "kamp-alanlari": "/images/fallback-camping.jpg",
+  "yeme-icme": "/images/fallback-food.jpg",
+  "tarihi-yerler": "/images/fallback-history.jpg",
+  "doga-rotalari": "/images/fallback-nature.jpg",
+  ilceler: "/images/fallback-mugla.jpg",
+  aktiviteler: "/images/fallback-nature.jpg",
+  "restoranlar-kafeler": "/images/fallback-food.jpg",
+  "oteller-konaklama": "/images/fallback-mugla.jpg",
+  "gece-hayati": "/images/fallback-mugla.jpg",
+  "ulasim-rehberi": "/images/fallback-mugla.jpg",
+};
+
+const articleImageFieldOrder = [
+  "image",
+  "coverImage",
+  "thumbnail",
+  "imageUrl",
+  "featuredImage",
+] as const;
+
+type ArticleImageField = (typeof articleImageFieldOrder)[number];
+
+export type ArticleImageInput = {
+  title?: string | null;
+  categorySlug?: string | null;
+  categoryName?: string | null;
+  image?: string | null;
+  coverImage?: string | null;
+  thumbnail?: string | null;
+  imageUrl?: string | null;
+  featuredImage?: string | null;
+  imageAlt?: string | null;
+  coverImageAlt?: string | null;
+  thumbnailAlt?: string | null;
+  featuredImageAlt?: string | null;
+};
+
+export type ResolvedArticleImage = ResolvedImageSource & {
+  alt: string;
+  sourceField: ArticleImageField | null;
 };
 
 const configuredOrigins = new Set(
@@ -80,6 +126,33 @@ function normalizeRelativeImagePath(value: string) {
   return null;
 }
 
+function getArticleImageAltValue(input: ArticleImageInput, sourceField: ArticleImageField | null) {
+  switch (sourceField) {
+    case "coverImage":
+      return input.coverImageAlt;
+    case "thumbnail":
+      return input.thumbnailAlt;
+    case "featuredImage":
+      return input.featuredImageAlt;
+    default:
+      return input.imageAlt;
+  }
+}
+
+function getArticleImageDefaultAlt(input: ArticleImageInput) {
+  const title = input.title?.trim();
+  if (title) {
+    return `${title} kapak görseli`;
+  }
+
+  const categoryName = input.categoryName?.trim();
+  if (categoryName) {
+    return `${categoryName} için fallback görsel`;
+  }
+
+  return "Muğla rehber görseli";
+}
+
 export function logImageDebug(message: string, details: Record<string, unknown>) {
   if (!getDebugEnabled()) {
     return;
@@ -132,6 +205,15 @@ export function normalizeImageSrc(
       return `${url.pathname}${url.search}`;
     }
 
+    if (url.protocol === "http:" && remoteImageHosts.includes(url.hostname)) {
+      url.protocol = "https:";
+      return url.toString();
+    }
+
+    if (url.protocol !== "https:") {
+      return fallbackSrc;
+    }
+
     return url.toString();
   } catch {
     return fallbackSrc;
@@ -146,7 +228,9 @@ export function isAllowedRemoteImage(src?: string | null) {
 
   try {
     const url = new URL(normalizedSrc);
-    return configuredOrigins.has(url.origin) || remoteImageHosts.includes(url.hostname);
+    return configuredOrigins.has(url.origin) || (
+      url.protocol === "https:" && remoteImageHosts.includes(url.hostname)
+    );
   } catch {
     return false;
   }
@@ -169,6 +253,33 @@ export function resolveImageSource(
     };
   }
 
+  if (isRemoteImageSrc(trimmedSrc)) {
+    try {
+      const preparedRemoteSrc = trimmedSrc.startsWith("//") ? `https:${trimmedSrc}` : trimmedSrc;
+      const remoteUrl = new URL(preparedRemoteSrc);
+
+      if (!configuredOrigins.has(remoteUrl.origin) && !remoteImageHosts.includes(remoteUrl.hostname)) {
+        return {
+          originalSrc: trimmedSrc,
+          src: fallbackSrc,
+          fallbackSrc,
+          isRemote: true,
+          isSvg: isSvgImage(fallbackSrc),
+          reason: "remote-host-not-allowlisted",
+        };
+      }
+    } catch {
+      return {
+        originalSrc: trimmedSrc,
+        src: fallbackSrc,
+        fallbackSrc,
+        isRemote: true,
+        isSvg: isSvgImage(fallbackSrc),
+        reason: "remote-host-not-allowlisted",
+      };
+    }
+  }
+
   const relativeMatch = normalizeRelativeImagePath(trimmedSrc);
   const normalizedSrc = normalizeImageSrc(trimmedSrc, fallbackSrc);
 
@@ -186,9 +297,11 @@ export function resolveImageSource(
   const reason =
     relativeMatch?.normalized
       ? "normalized-relative-src"
-      : isRemoteImageSrc(trimmedSrc) && normalizedSrc.startsWith("/")
-        ? "same-origin-absolute-src"
-        : null;
+      : trimmedSrc.startsWith("http://") && normalizedSrc.startsWith("https://")
+        ? "upgraded-insecure-protocol"
+        : isRemoteImageSrc(trimmedSrc) && normalizedSrc.startsWith("/")
+          ? "same-origin-absolute-src"
+          : null;
 
   return {
     originalSrc: trimmedSrc,
@@ -200,10 +313,43 @@ export function resolveImageSource(
   };
 }
 
+export function getCategoryFallbackImage(slug?: string | null) {
+  const normalizedSlug = slug?.trim().toLocaleLowerCase("tr");
+  if (!normalizedSlug) {
+    return defaultImageFallbackSrc;
+  }
+
+  return categoryFallbackImages[normalizedSlug] ?? defaultImageFallbackSrc;
+}
+
 export function getCategoryCoverImage(slug: string) {
-  return categoryCoverImages[slug] ?? defaultImageFallbackSrc;
+  return categoryCoverImages[slug] ?? getCategoryFallbackImage(slug);
 }
 
 export function getCategoryCoverAlt(name: string) {
   return `${name} kategori kapak görseli`;
+}
+
+export function resolveArticleImageData(input: ArticleImageInput): ResolvedArticleImage {
+  let sourceField: ArticleImageField | null = null;
+  let candidateSrc: string | null = null;
+
+  for (const field of articleImageFieldOrder) {
+    const candidate = input[field];
+
+    if (typeof candidate === "string" && candidate.trim()) {
+      sourceField = field;
+      candidateSrc = candidate.trim();
+      break;
+    }
+  }
+
+  const fallbackSrc = getCategoryFallbackImage(input.categorySlug);
+  const alt = getArticleImageAltValue(input, sourceField)?.trim() || getArticleImageDefaultAlt(input);
+
+  return {
+    ...resolveImageSource(candidateSrc, fallbackSrc),
+    alt,
+    sourceField,
+  };
 }

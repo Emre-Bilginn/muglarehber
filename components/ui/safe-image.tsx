@@ -1,7 +1,7 @@
 'use client';
 
 import Image, { ImageProps } from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { defaultImageFallbackSrc } from "@/lib/image-config";
 import { isSvgImage, logImageDebug, resolveImageSource } from "@/lib/image-utils";
@@ -31,6 +31,7 @@ export default function SafeImage({
   debugLabel,
   onError,
   onLoad,
+  onLoadingComplete,
   placeholder,
   blurDataURL,
   ...props
@@ -39,6 +40,8 @@ export default function SafeImage({
   const [currentSrc, setCurrentSrc] = useState(initialSource.src);
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasFailed, setHasFailed] = useState(false);
+  const imageRef = useRef<HTMLImageElement | null>(null);
+  const resolvedFallback = resolveImageSource(fallbackSrc, fallbackSrc).src;
 
   useEffect(() => {
     const nextSource = resolveImageSource(src, fallbackSrc);
@@ -56,6 +59,30 @@ export default function SafeImage({
       });
     }
   }, [debugLabel, fallbackSrc, src]);
+
+  useEffect(() => {
+    const imageElement = imageRef.current;
+
+    if (!imageElement || !imageElement.complete) {
+      return;
+    }
+
+    if (imageElement.naturalWidth > 0 || isSvgImage(currentSrc)) {
+      setIsLoaded(true);
+      setHasFailed(false);
+      return;
+    }
+
+    if (currentSrc !== resolvedFallback) {
+      setCurrentSrc(resolvedFallback);
+      setIsLoaded(false);
+      setHasFailed(false);
+      return;
+    }
+
+    setHasFailed(true);
+    setIsLoaded(true);
+  }, [currentSrc, resolvedFallback]);
 
   return (
     <>
@@ -76,9 +103,11 @@ export default function SafeImage({
         className={cn(
           "transition-opacity duration-300",
           !isLoaded && "opacity-0",
+          hasFailed && "opacity-0",
           className,
         )}
         fill={fill}
+        ref={imageRef}
         sizes={sizes}
         style={style}
         src={currentSrc}
@@ -87,20 +116,26 @@ export default function SafeImage({
         unoptimized={props.unoptimized ?? isSvgImage(currentSrc)}
         onLoad={(event) => {
           setIsLoaded(true);
+          setHasFailed(false);
           onLoad?.(event);
         }}
+        onLoadingComplete={(imageElement) => {
+          imageRef.current = imageElement;
+          setIsLoaded(true);
+          setHasFailed(false);
+          onLoadingComplete?.(imageElement);
+        }}
         onError={(event) => {
-          const nextSource = resolveImageSource(fallbackSrc, fallbackSrc);
-
           logImageDebug("safe-image:error", {
             label: debugLabel,
             attemptedSrc: currentSrc,
-            fallbackSrc: nextSource.src,
+            fallbackSrc: resolvedFallback,
           });
 
-          if (currentSrc !== nextSource.src) {
-            setCurrentSrc(nextSource.src);
+          if (currentSrc !== resolvedFallback) {
+            setCurrentSrc(resolvedFallback);
             setIsLoaded(false);
+            setHasFailed(false);
           } else {
             setHasFailed(true);
             setIsLoaded(true);
