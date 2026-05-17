@@ -5,7 +5,7 @@ description: "Muğla'da gezilecek en güzel yerleri ilçe ilçe planlayan, rota 
 excerpt: "Muğla'da nereye gidilir sorusuna yalnızca isim listesiyle değil, rota mantığı, sezon bilgisi ve ziyaret önceliğiyle cevap veren detaylı gezi rehberi."
 category: "gezilecek-yerler"
 district: "Muğla geneli"
-image: "/images/guides/gezilecek-yerler-cover.svg"
+image: "/images/articles/muglada-gezilecek-en-guzel-yerler.jpg"
 imageAlt: "Muğla gezi rehberi kapak görseli"
 publishedAt: "2026-03-20"
 updatedAt: "2026-04-12"
@@ -101,4 +101,3 @@ Tek bir ilçede konaklayıp çevresini gezecek biri için araç kiralama her zam
 Muğla'yı gezmenin en doğru yolu, “en iyi 20 yer” listesine bakıp mümkün olduğunca çok isim işaretlemek değildir. Bölgeyi güçlü kılan şey, aynı il sınırları içinde farklı tatil karakterlerinin bir arada bulunmasıdır. Fethiye daha görsel ve hareketli bir doğa-deniz dengesi sunarken, Akyaka daha sakin ama iyi kurgulandığında çok tatmin edici bir ritim üretir. Datça, sabır isteyen ama karşılığını veren bir yarımada deneyimi sunar; Bodrum ise sahil profili çeşitliliği sayesinde seçici bir rota ister.
 
 Kendinize en doğru Muğla tatilini kurmak için önce beklentinizi netleştirin: deniz mi, doğa mı, tarih mi, sakinlik mi, yoksa hepsinden dengeli bir karışım mı? Sonrasında bu rehberdeki bölgesel ayrımları kullanarak daha dar ama daha doğru bir plan kurun. Muğla'nın tadı, aynı tatilde her şeyi görmekten değil, seçtiğiniz bölgeyi hakkını vererek deneyimlemekten çıkar.
-

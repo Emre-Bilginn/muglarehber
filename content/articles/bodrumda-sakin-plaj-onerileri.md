@@ -5,7 +5,7 @@ description: "Bodrum'da sakin plaj arayanlar için yarımadadaki daha dengeli ko
 excerpt: "Bodrum'u sadece yüksek sesli beach club'larla değil; sabah sakin kalan koylar, aile dostu sahiller ve daha dengeli kıyı duraklarıyla okumak isteyenler için detaylı plaj rehberi."
 category: "plajlar"
 district: "Bodrum"
-image: "/images/guides/plajlar-cover.svg"
+image: "/images/articles/bodrumda-sakin-plaj-onerileri.jpg"
 imageAlt: "Bodrum sakin plajlar kapak görseli"
 publishedAt: "2026-03-12"
 updatedAt: "2026-04-08"

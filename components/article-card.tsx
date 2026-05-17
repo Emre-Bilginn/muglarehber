@@ -2,7 +2,8 @@ import Link from "next/link";
 import { CalendarDays, Clock3, ArrowUpRight } from "lucide-react";
 import SafeImage from "@/components/ui/safe-image";
 import type { GuideArticle } from "@/lib/content";
-import { getCategoryFallbackImage, isSvgImage } from "@/lib/image-utils";
+import { defaultImageFallbackSrc } from "@/lib/image-config";
+import { isSvgImage } from "@/lib/image-utils";
 
 type Variant = "hero" | "default" | "row" | "compact";
 
@@ -34,19 +35,15 @@ export default function ArticleCard({
   const isRow = variant === "row";
   const isHero = variant === "hero";
   const isIllustration = isSvgImage(article.image);
-  const fallbackSrc = getCategoryFallbackImage(article.category.slug);
-  const imageClassName = isIllustration
-    ? isCompact
-      ? "object-contain p-2"
-      : "object-contain p-4 md:p-6"
-    : "object-cover";
+  const fallbackSrc = defaultImageFallbackSrc;
+  const imageClassName = "h-full w-full object-cover";
   const imageWrapperClassName = isCompact
-    ? "relative aspect-[4/3] min-h-[120px] overflow-hidden rounded-[1rem] bg-slate-100"
+    ? "relative aspect-[16/9] overflow-hidden rounded-[inherit] bg-slate-100"
     : isHero
-      ? "relative aspect-[16/10] overflow-hidden bg-slate-100 lg:min-h-[320px]"
+      ? "relative aspect-[16/9] overflow-hidden rounded-[inherit] bg-slate-100"
       : isRow
-        ? "relative aspect-[16/10] overflow-hidden bg-slate-100 md:min-h-[240px]"
-        : "relative aspect-[16/10] overflow-hidden bg-slate-100";
+        ? "relative aspect-[16/9] overflow-hidden rounded-[inherit] bg-slate-100"
+        : "relative aspect-[16/9] overflow-hidden rounded-[inherit] bg-slate-100";
 
   return (
     <article className={variants[variant]}>

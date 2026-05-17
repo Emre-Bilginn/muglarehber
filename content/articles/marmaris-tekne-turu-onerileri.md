@@ -5,7 +5,7 @@ description: "Marmaris'te tekne turu seçerken rota tipi, kalabalık seviyesi, �
 excerpt: "Marmaris'te tekne turu planlayanlar için büyük grup turları, butik seçenekler, koy karakterleri ve denizde geçirilen günün nasıl daha verimli hale getirileceğini anlatan detaylı içerik."
 category: "doga-rotalari"
 district: "Marmaris"
-image: "/images/guides/doga-rotalari-cover.svg"
+image: "/images/articles/marmaris-tekne-turu-onerileri.jpg"
 imageAlt: "Marmaris tekne turları kapak görseli"
 publishedAt: "2026-03-26"
 updatedAt: "2026-04-12"

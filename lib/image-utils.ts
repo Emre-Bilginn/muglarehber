@@ -18,13 +18,13 @@ type ResolvedImageSource = {
 };
 
 const categoryCoverImages: Record<string, string> = {
-  "gezilecek-yerler": "/images/guides/gezilecek-yerler-cover.svg",
-  plajlar: "/images/guides/plajlar-cover.svg",
-  "kamp-alanlari": "/images/guides/kamp-alanlari-cover.svg",
-  "yeme-icme": "/images/guides/yeme-icme-cover.svg",
-  "tarihi-yerler": "/images/guides/tarihi-yerler-cover.svg",
-  "doga-rotalari": "/images/guides/doga-rotalari-cover.svg",
-  ilceler: "/images/guides/ilceler-cover.svg",
+  "gezilecek-yerler": "/images/categories/gezilecek-yerler.jpg",
+  plajlar: "/images/categories/plajlar.jpg",
+  "kamp-alanlari": "/images/categories/kamp-alanlari.jpg",
+  "yeme-icme": "/images/categories/yeme-icme.jpg",
+  "tarihi-yerler": "/images/categories/tarihi-yerler.jpg",
+  "doga-rotalari": "/images/categories/doga-rotalari.jpg",
+  ilceler: "/images/categories/ilceler.jpg",
 };
 
 const categoryFallbackImages: Record<string, string> = {
@@ -53,6 +53,7 @@ const articleImageFieldOrder = [
 type ArticleImageField = (typeof articleImageFieldOrder)[number];
 
 export type ArticleImageInput = {
+  slug?: string | null;
   title?: string | null;
   categorySlug?: string | null;
   categoryName?: string | null;

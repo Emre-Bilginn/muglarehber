@@ -103,7 +103,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
                   fill
                   priority
                   sizes="(min-width: 1024px) 380px, 100vw"
-                  className="object-contain p-6 md:p-8"
+                  className="object-cover"
                   debugLabel={`category-hero:${category.slug}`}
                 />
               </div>

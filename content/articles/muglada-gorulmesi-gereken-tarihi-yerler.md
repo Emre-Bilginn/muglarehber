@@ -5,7 +5,7 @@ description: "Muğla'daki önemli tarihi yerleri yalnızca listelemekle kalmayan
 excerpt: "Kaunos, Knidos, Tlos, Bodrum Kalesi ve kaya mezarları gibi tarih duraklarını gezi deneyimi üzerinden karşılaştıran detaylı Muğla rehberi."
 category: "tarihi-yerler"
 district: "Muğla geneli"
-image: "/images/guides/tarihi-yerler-cover.svg"
+image: "/images/articles/muglada-gorulmesi-gereken-tarihi-yerler.jpg"
 imageAlt: "Muğla tarihi yerler kapak görseli"
 publishedAt: "2026-04-04"
 updatedAt: "2026-04-13"

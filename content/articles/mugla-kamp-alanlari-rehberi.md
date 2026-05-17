@@ -5,7 +5,7 @@ description: "Muğla'da kamp planlayanlar için deniz kenarı, orman içi ve yol
 excerpt: "Muğla'da kamp yapılacak yerleri yalnızca manzaraya göre değil; altyapı, gölge, erişim, sezon yoğunluğu ve güvenlik açısından değerlendiren detaylı içerik."
 category: "kamp-alanlari"
 district: "Muğla geneli"
-image: "/images/guides/kamp-alanlari-cover.svg"
+image: "/images/articles/mugla-kamp-alanlari-rehberi.jpg"
 imageAlt: "Muğla kamp alanları kapak görseli"
 publishedAt: "2026-03-30"
 updatedAt: "2026-04-13"

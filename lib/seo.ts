@@ -59,7 +59,7 @@ export function organizationSchema() {
     "@type": "Organization",
     name: siteConfig.name,
     url: absoluteUrl("/"),
-    logo: absoluteUrl("/favicon.svg"),
+    logo: absoluteUrl("/icon.png"),
     sameAs: [],
     contactPoint: [
       {
@@ -120,9 +120,8 @@ export function articleSchema(input: ArticleSchemaInput) {
       name: siteConfig.name,
       logo: {
         "@type": "ImageObject",
-        url: absoluteUrl("/favicon.svg"),
+        url: absoluteUrl("/icon.png"),
       },
     },
   };
 }
-

@@ -5,7 +5,7 @@ description: "Muğla mutfağını otlar, deniz ürünleri, hamur işleri ve ilç
 excerpt: "Muğla'da ne yenir sorusunu restoran listesine indirgemeden; yerel ürün, sipariş mantığı ve ilçe farkları üzerinden anlatan detaylı içerik."
 category: "yeme-icme"
 district: "Muğla geneli"
-image: "/images/guides/yeme-icme-cover.svg"
+image: "/images/articles/muglada-denenmesi-gereken-yerel-lezzetler.jpg"
 imageAlt: "Muğla yerel lezzetler kapak görseli"
 publishedAt: "2026-04-01"
 updatedAt: "2026-04-13"

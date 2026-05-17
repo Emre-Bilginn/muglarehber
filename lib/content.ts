@@ -2,11 +2,12 @@ import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
 import { cache } from "react";
+import { defaultImageFallbackSrc } from "@/lib/image-config";
 import {
-  getCategoryFallbackImage,
   isAllowedRemoteImage,
   isLocalImageSrc,
   logImageDebug,
+  normalizeImageSrc,
   resolveArticleImageData,
 } from "@/lib/image-utils";
 import { absoluteUrl } from "@/lib/site-config";
@@ -70,6 +71,16 @@ type ArticleFrontmatter = {
   tags?: string[];
   quickFacts: QuickFacts;
 };
+
+const articleImageFieldOrder = [
+  "image",
+  "coverImage",
+  "thumbnail",
+  "imageUrl",
+  "featuredImage",
+] as const;
+
+type ArticleImageFieldName = (typeof articleImageFieldOrder)[number];
 
 export interface TableOfContentsItem {
   id: string;
@@ -264,41 +275,74 @@ function getAuthor(slug: string) {
   return author;
 }
 
-function ensureResolvedArticleImage(
+function getFrontmatterArticleImage(frontmatter: ArticleFrontmatter) {
+  for (const field of articleImageFieldOrder) {
+    const candidate = frontmatter[field as ArticleImageFieldName];
+
+    if (typeof candidate === "string" && candidate.trim()) {
+      return candidate.trim();
+    }
+  }
+
+  return null;
+}
+
+function getArticleLocalImagePath(articleSlug: string) {
+  return `/images/articles/${articleSlug}.jpg`;
+}
+
+function isCategoryHeroImagePath(image: string) {
+  return image.startsWith("/images/categories/");
+}
+
+function resolveUsableArticleImage(
   fileName: string,
   articleSlug: string,
-  image: string,
-  fallbackImage: string,
+  image?: string | null,
 ) {
-  if (isLocalImageSrc(image)) {
-    const localPath = path.join(process.cwd(), "public", ...image.replace(/^\/+/, "").split("/"));
+  const normalizedImage = normalizeImageSrc(image, "");
+
+  if (!normalizedImage) {
+    return null;
+  }
+
+  if (isCategoryHeroImagePath(normalizedImage)) {
+    logImageDebug("content:category-hero-rejected-for-article", {
+      fileName,
+      slug: articleSlug,
+      image: normalizedImage,
+    });
+
+    return null;
+  }
+
+  if (isLocalImageSrc(normalizedImage)) {
+    const localPath = path.join(process.cwd(), "public", ...normalizedImage.replace(/^\/+/, "").split("/"));
 
     if (!fs.existsSync(localPath)) {
       logImageDebug("content:missing-local-image", {
         fileName,
         slug: articleSlug,
-        image,
-        fallbackImage,
+        image: normalizedImage,
       });
 
-      return fallbackImage;
+      return null;
     }
 
-    return image;
+    return normalizedImage;
   }
 
-  if (!isAllowedRemoteImage(image)) {
+  if (!isAllowedRemoteImage(normalizedImage)) {
     logImageDebug("content:remote-host-not-allowlisted", {
       fileName,
       slug: articleSlug,
-      image,
-      fallbackImage,
+      image: normalizedImage,
     });
 
-    return fallbackImage;
+    return null;
   }
 
-  return image;
+  return normalizedImage;
 }
 
 function parseArticle(fileName: string): GuideArticle {
@@ -309,9 +353,12 @@ function parseArticle(fileName: string): GuideArticle {
 
   const category = getCategory(frontmatter.category);
   const author = getAuthor(frontmatter.author);
-  const fallbackImage = getCategoryFallbackImage(frontmatter.category);
+  const frontmatterImage = getFrontmatterArticleImage(frontmatter);
+  const normalizedFrontmatterImage = normalizeImageSrc(frontmatterImage, "");
+  const articleLocalImagePath = getArticleLocalImagePath(frontmatter.slug);
   const resolvedImage = resolveArticleImageData({
     title: frontmatter.title,
+    slug: frontmatter.slug,
     categorySlug: frontmatter.category,
     categoryName: category.name,
     image: frontmatter.image,
@@ -324,7 +371,12 @@ function parseArticle(fileName: string): GuideArticle {
     thumbnailAlt: frontmatter.thumbnailAlt,
     featuredImageAlt: frontmatter.featuredImageAlt,
   });
-  const image = ensureResolvedArticleImage(fileName, frontmatter.slug, resolvedImage.src, fallbackImage);
+  const image =
+    resolveUsableArticleImage(fileName, frontmatter.slug, frontmatterImage) ??
+    (normalizedFrontmatterImage === articleLocalImagePath
+      ? null
+      : resolveUsableArticleImage(fileName, frontmatter.slug, articleLocalImagePath)) ??
+    defaultImageFallbackSrc;
   const imageAlt = frontmatter.imageAlt?.trim() || `${frontmatter.title} kapak görseli`;
   const body = content.trim();
   const wordCount = countWords(body);

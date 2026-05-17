@@ -5,7 +5,7 @@ description: "Fethiye'de görülmesi gereken yerleri gün planı mantığıyla a
 excerpt: "Fethiye'yi yalnızca Ölüdeniz'den ibaret görmeyen; sahil, tarih, merkez ve çevre duraklarını gün bazında açıklayan kapsamlı rota rehberi."
 category: "ilceler"
 district: "Fethiye"
-image: "/images/guides/ilceler-cover.svg"
+image: "/images/articles/fethiyede-mutlaka-gorulmesi-gereken-yerler.jpg"
 imageAlt: "Fethiye rehberi kapak görseli"
 publishedAt: "2026-03-16"
 updatedAt: "2026-04-10"
