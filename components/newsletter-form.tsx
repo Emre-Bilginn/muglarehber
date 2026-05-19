@@ -24,7 +24,7 @@ export default function NewsletterForm() {
           />
         </div>
         <button
-          type="submit"
+          type="button"
           className="rounded-full bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition hover:-translate-y-0.5 hover:bg-white/90"
         >
           Abone Ol

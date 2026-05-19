@@ -55,12 +55,13 @@ export default function ContactForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form action="/api/contact" method="post" onSubmit={handleSubmit} className="space-y-5">
       <div className="grid gap-5 md:grid-cols-2">
         <label className="space-y-2">
           <span className="text-sm font-medium text-slate-800">Ad soyad</span>
           <input
             required
+            name="name"
             value={formData.name}
             onChange={(event) => updateField("name", event.target.value)}
             className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none ring-0 transition focus:border-sky-400"
@@ -73,6 +74,7 @@ export default function ContactForm() {
           <input
             required
             type="email"
+            name="email"
             value={formData.email}
             onChange={(event) => updateField("email", event.target.value)}
             className="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm text-slate-900 outline-none ring-0 transition focus:border-sky-400"
@@ -85,6 +87,7 @@ export default function ContactForm() {
         <span className="text-sm font-medium text-slate-800">Konu</span>
         <select
           required
+          name="subject"
           value={formData.subject}
           onChange={(event) => updateField("subject", event.target.value)}
           className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-sky-400"
@@ -101,6 +104,7 @@ export default function ContactForm() {
         <span className="text-sm font-medium text-slate-800">Mesaj</span>
         <textarea
           required
+          name="message"
           rows={7}
           value={formData.message}
           onChange={(event) => updateField("message", event.target.value)}

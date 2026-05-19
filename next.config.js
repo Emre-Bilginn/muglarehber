@@ -1,5 +1,5 @@
 const path = require('path');
-const { remoteImageHosts, remoteImagePatterns } = require('./lib/image-config');
+const { remoteImagePatterns } = require('./lib/image-config');
 
 function getConfiguredSiteRemotePatterns() {
   const candidates = [
@@ -61,10 +61,11 @@ const nextConfig = {
     contentDispositionType: 'inline',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     dangerouslyAllowSVG: true,
-    domains: remoteImageHosts,
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 86400,
-    unoptimized: process.env.NEXT_IMAGE_UNOPTIMIZED === 'true',
+    unoptimized:
+      process.env.NODE_ENV === 'production' ||
+      process.env.NEXT_IMAGE_UNOPTIMIZED === 'true',
     remotePatterns: [...remoteImagePatterns, ...getConfiguredSiteRemotePatterns()],
   },
 };

@@ -8,11 +8,13 @@ type PrismaClientSingleton = PrismaClient<
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClientSingleton | undefined;
   prismaDebugReady: boolean | undefined;
+  prismaConfigWarningPrinted: boolean | undefined;
 };
 
-function getDatabaseDebugInfo() {
-  const databaseUrl = process.env.DATABASE_URL ?? '';
+const databaseUrl = process.env.DATABASE_URL?.trim() ?? '';
+const databaseConfigured = Boolean(databaseUrl);
 
+function getDatabaseDebugInfo() {
   if (!databaseUrl) {
     return {
       hasDatabaseUrl: false,
@@ -39,17 +41,48 @@ function getDatabaseDebugInfo() {
   }
 }
 
-const prismaLogConfig = [
-  { emit: 'event' as const, level: 'query' as const },
+const prismaLogConfig: Prisma.LogDefinition[] = [
   { emit: 'stdout' as const, level: 'warn' as const },
   { emit: 'stdout' as const, level: 'error' as const },
 ];
+
+if (process.env.DB_DEBUG === 'true') {
+  prismaLogConfig.unshift({ emit: 'event' as const, level: 'query' as const });
+}
 
 export const prisma: PrismaClientSingleton =
   globalForPrisma.prisma ??
   new PrismaClient({
     log: prismaLogConfig,
   });
+
+export function hasDatabaseUrl() {
+  return databaseConfigured;
+}
+
+export function isDatabaseConnectionError(error: unknown) {
+  if (error instanceof Prisma.PrismaClientInitializationError) {
+    return true;
+  }
+
+  const prismaError = error as { code?: string; message?: string } | null;
+  const errorCode = prismaError?.code ?? '';
+  const errorMessage = prismaError?.message?.toLowerCase?.() ?? '';
+
+  return (
+    errorCode === 'P1001' ||
+    errorCode === 'P1002' ||
+    errorCode === 'P1008' ||
+    errorCode === 'P1017' ||
+    errorMessage.includes("can't reach database server") ||
+    errorMessage.includes('server has closed the connection')
+  );
+}
+
+if (!databaseConfigured && !globalForPrisma.prismaConfigWarningPrinted) {
+  console.warn('[prisma:init] DATABASE_URL is not configured. Database-backed features are disabled.');
+  globalForPrisma.prismaConfigWarningPrinted = true;
+}
 
 if (process.env.DB_DEBUG === 'true' && !globalForPrisma.prismaDebugReady) {
   console.log('[prisma:init]', getDatabaseDebugInfo());
@@ -58,7 +91,6 @@ if (process.env.DB_DEBUG === 'true' && !globalForPrisma.prismaDebugReady) {
     console.log('[prisma:query]', {
       durationMs: event.duration,
       target: event.target,
-      query: event.query,
     });
   });
 

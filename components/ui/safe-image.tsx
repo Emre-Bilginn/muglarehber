@@ -147,7 +147,7 @@ export default function SafeImage({
 
       {hasFailed ? (
         <span className="pointer-events-none absolute inset-0 flex items-center justify-center bg-slate-100/90 px-4 text-center text-xs font-medium uppercase tracking-[0.18em] text-slate-500">
-          Görsel yüklenemedi
+          Gorsel yuklenemedi
         </span>
       ) : null}
     </>

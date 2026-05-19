@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { User, Send, Loader2, MessageCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -19,6 +19,7 @@ export default function CommentSection({ articleId }: CommentSectionProps) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [commentsUnavailable, setCommentsUnavailable] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [content, setContent] = useState('');
@@ -31,19 +32,33 @@ export default function CommentSection({ articleId }: CommentSectionProps) {
         const res = await fetch(`/api/comments?articleId=${articleId ?? ''}`);
         const data = await res?.json?.();
         setComments(data?.comments ?? []);
+        setCommentsUnavailable(Boolean(data?.unavailable));
       } catch (err) {
         console.error('Error fetching comments:', err);
+        setCommentsUnavailable(true);
       } finally {
         setLoading(false);
       }
     };
+
     if (articleId) {
       fetchComments();
+      return;
     }
+
+    setComments([]);
+    setCommentsUnavailable(true);
+    setLoading(false);
   }, [articleId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e?.preventDefault?.();
+
+    if (commentsUnavailable) {
+      setError('Yorum gonderimi gecici olarak kullanilamiyor.');
+      return;
+    }
+
     setSubmitting(true);
     setError('');
     setSuccess(false);
@@ -54,9 +69,9 @@ export default function CommentSection({ articleId }: CommentSectionProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ articleId, name, email, content }),
       });
+      const data = await res?.json?.();
 
       if (res?.ok) {
-        const data = await res?.json?.();
         setComments((prev) => [data?.comment, ...(prev ?? [])]);
         setName('');
         setEmail('');
@@ -64,11 +79,11 @@ export default function CommentSection({ articleId }: CommentSectionProps) {
         setSuccess(true);
         setTimeout(() => setSuccess(false), 3000);
       } else {
-        setError('Yorum gönderilemedi. Lütfen tekrar deneyin.');
+        setError(data?.error ?? 'Yorum gonderilemedi. Lutfen tekrar deneyin.');
       }
     } catch (err) {
       console.error('Error submitting comment:', err);
-      setError('Bir hata oluştu.');
+      setError('Bir hata olustu.');
     } finally {
       setSubmitting(false);
     }
@@ -81,23 +96,26 @@ export default function CommentSection({ articleId }: CommentSectionProps) {
         Yorumlar ({comments?.length ?? 0})
       </h3>
 
-      <form onSubmit={handleSubmit} className="mb-8 space-y-4">
+      <form action="/api/comments" method="post" onSubmit={handleSubmit} className="mb-8 space-y-4">
+        <input type="hidden" name="articleId" value={articleId} />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Adınız</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Adiniz</label>
             <input
               type="text"
+              name="name"
               value={name ?? ''}
               onChange={(e) => setName(e?.target?.value ?? '')}
               required
               className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent outline-none transition-all"
-              placeholder="Adınızı girin"
+              placeholder="Adinizi girin"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">E-posta</label>
             <input
               type="email"
+              name="email"
               value={email ?? ''}
               onChange={(e) => setEmail(e?.target?.value ?? '')}
               required
@@ -109,30 +127,41 @@ export default function CommentSection({ articleId }: CommentSectionProps) {
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Yorumunuz</label>
           <textarea
+            name="content"
             value={content ?? ''}
             onChange={(e) => setContent(e?.target?.value ?? '')}
             required
             rows={4}
             className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-sky-500 focus:border-transparent outline-none transition-all resize-none"
-            placeholder="Yorumunuzu yazın..."
+            placeholder="Yorumunuzu yazin..."
           />
         </div>
         <div className="flex items-center justify-between">
-          <p className="text-xs text-gray-400">E-posta adresiniz yayınlanmayacaktır.</p>
+          <p className="text-xs text-gray-400">E-posta adresiniz yayinlanmayacaktir.</p>
           <button
             type="submit"
-            disabled={submitting}
+            disabled={submitting || commentsUnavailable}
             className="flex items-center gap-2 px-6 py-2.5 bg-sky-500 hover:bg-sky-600 disabled:bg-sky-300 text-white font-medium rounded-lg transition-colors"
           >
             {submitting ? (
-              <><Loader2 className="w-4 h-4 animate-spin" /> Gönderiliyor...</>
+              <><Loader2 className="w-4 h-4 animate-spin" /> Gonderiliyor...</>
             ) : (
-              <><Send className="w-4 h-4" /> Yorum Gönder</>
+              <><Send className="w-4 h-4" /> Yorum Gonder</>
             )}
           </button>
         </div>
 
         <AnimatePresence>
+          {commentsUnavailable && !error ? (
+            <motion.p
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="text-amber-700 text-sm font-medium"
+            >
+              Yorum servisi su anda gecici olarak kullanilamiyor.
+            </motion.p>
+          ) : null}
           {success && (
             <motion.p
               initial={{ opacity: 0, y: -10 }}
@@ -140,7 +169,7 @@ export default function CommentSection({ articleId }: CommentSectionProps) {
               exit={{ opacity: 0 }}
               className="text-green-600 text-sm font-medium"
             >
-              Yorumunuz başarıyla eklendi!
+              Yorumunuz basariyla eklendi!
             </motion.p>
           )}
           {error && (
@@ -163,7 +192,7 @@ export default function CommentSection({ articleId }: CommentSectionProps) {
           </div>
         ) : (comments?.length ?? 0) === 0 ? (
           <p className="text-center text-gray-500 py-8">
-            Henüz yorum yok. İlk yorumu siz yapın!
+            Henuz yorum yok. Ilk yorumu siz yapin!
           </p>
         ) : (
           comments?.map?.((comment) => (
