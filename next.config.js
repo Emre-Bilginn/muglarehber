@@ -63,9 +63,6 @@ const nextConfig = {
     dangerouslyAllowSVG: true,
     formats: ['image/avif', 'image/webp'],
     minimumCacheTTL: 86400,
-    unoptimized:
-      process.env.NODE_ENV === 'production' ||
-      process.env.NEXT_IMAGE_UNOPTIMIZED === 'true',
     remotePatterns: [...remoteImagePatterns, ...getConfiguredSiteRemotePatterns()],
   },
 };

@@ -5,6 +5,7 @@ description: "Datça'daki koyları sakinlik, ulaşım kolaylığı, deniz karakt
 excerpt: "Palamutbükü, Ovabükü, Hayıtbükü, Kargı ve yarımadanın daha sakin cephelerini yalnızca güzel oldukları için değil, hangi ziyaretçi profiline uydukları için anlatan kapsamlı içerik."
 category: "plajlar"
 district: "Datça"
+destinationSlug: "datca"
 image: "/images/articles/datca-koylari-rehberi.jpg"
 imageAlt: "Datça koyları kapak görseli"
 publishedAt: "2026-03-24"

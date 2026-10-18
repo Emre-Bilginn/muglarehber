@@ -52,6 +52,8 @@ type ArticleFrontmatter = {
   excerpt: string;
   category: CategorySlug;
   district?: string;
+  destinationSlug?: string;
+  placeSlugs?: string[];
   image?: string | null;
   coverImage?: string | null;
   thumbnail?: string | null;
@@ -95,6 +97,8 @@ export interface GuideArticle {
   excerpt: string;
   category: GuideCategory;
   district?: string;
+  destinationSlug?: string;
+  placeSlugs: string[];
   image: string;
   imageAlt: string;
   publishedAt: string;
@@ -400,6 +404,8 @@ function parseArticle(fileName: string): GuideArticle {
     excerpt: frontmatter.excerpt,
     category,
     district: frontmatter.district,
+    destinationSlug: frontmatter.destinationSlug,
+    placeSlugs: frontmatter.placeSlugs ?? [],
     image,
     imageAlt: resolvedImage.alt,
     publishedAt: frontmatter.publishedAt,
@@ -450,6 +456,14 @@ export function getArticleBySlug(slug: string) {
 
 export function getArticlesByCategory(slug: string) {
   return getAllArticles().filter((article) => article.category.slug === slug);
+}
+
+export function getArticlesByDestination(slug: string) {
+  return getAllArticles().filter((article) => article.destinationSlug === slug);
+}
+
+export function getArticlesByPlace(slug: string) {
+  return getAllArticles().filter((article) => article.placeSlugs.includes(slug));
 }
 
 export function getCategoryBySlug(slug: string) {

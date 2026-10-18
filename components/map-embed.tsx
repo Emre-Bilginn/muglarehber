@@ -13,7 +13,10 @@ export default function MapEmbed({ lat, lng, title = '' }: MapEmbedProps) {
     return null;
   }
 
-  const mapUrl = `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${lat},${lng}&zoom=14`;
+  const mapsApiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  const mapUrl = mapsApiKey
+    ? `https://www.google.com/maps/embed/v1/place?key=${mapsApiKey}&q=${lat},${lng}&zoom=14`
+    : null;
   const directionsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
 
   return (
@@ -24,19 +27,21 @@ export default function MapEmbed({ lat, lng, title = '' }: MapEmbedProps) {
           Konum
         </h3>
       </div>
-      <div className="aspect-video relative">
-        <iframe
-          src={mapUrl ?? ''}
-          width="100%"
-          height="100%"
-          style={{ border: 0 }}
-          allowFullScreen
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-          title={title ?? 'Harita'}
-          className="absolute inset-0"
-        />
-      </div>
+      {mapUrl ? (
+        <div className="aspect-video relative">
+          <iframe
+            src={mapUrl}
+            width="100%"
+            height="100%"
+            style={{ border: 0 }}
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            title={title ?? 'Harita'}
+            className="absolute inset-0"
+          />
+        </div>
+      ) : null}
       <div className="p-4">
         <a
           href={directionsUrl ?? '#'}

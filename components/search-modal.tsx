@@ -6,7 +6,7 @@ import { Loader2, Search, X } from "lucide-react";
 import SafeImage from "@/components/ui/safe-image";
 import { getCategoryFallbackImage, isSvgImage } from "@/lib/image-utils";
 
-type SearchResult = {
+type ArticleSearchResult = {
   slug: string;
   title: string;
   excerpt: string;
@@ -15,17 +15,29 @@ type SearchResult = {
   category: { name: string; slug: string };
 };
 
+type PlaceSearchResult = {
+  slug: string;
+  name: string;
+  shortDescription: string;
+  heroImage?: string | null;
+  placeType: string;
+  placeTypeLabel: string;
+  destination: { name: string; slug: string } | null;
+};
+
 export default function SearchModal() {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<SearchResult[]>([]);
+  const [articleResults, setArticleResults] = useState<ArticleSearchResult[]>([]);
+  const [placeResults, setPlaceResults] = useState<PlaceSearchResult[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!isOpen) {
       document.body.classList.remove("overflow-hidden");
       setQuery("");
-      setResults([]);
+      setArticleResults([]);
+      setPlaceResults([]);
       return;
     }
 
@@ -35,7 +47,8 @@ export default function SearchModal() {
 
   useEffect(() => {
     if (query.trim().length < 2) {
-      setResults([]);
+      setArticleResults([]);
+      setPlaceResults([]);
       return;
     }
 
@@ -44,7 +57,8 @@ export default function SearchModal() {
       try {
         const response = await fetch(`/api/search?q=${encodeURIComponent(query)}`);
         const data = await response.json();
-        setResults(data.articles ?? []);
+        setArticleResults(data.articles ?? []);
+        setPlaceResults(data.places ?? []);
       } finally {
         setLoading(false);
       }
@@ -97,13 +111,60 @@ export default function SearchModal() {
                 <div className="rounded-[1.5rem] bg-slate-50 px-6 py-10 text-center text-sm leading-7 text-slate-500">
                   En az 2 karakter yazarak rehberler içinde arama yapabilirsiniz.
                 </div>
-              ) : results.length === 0 ? (
+              ) : articleResults.length === 0 && placeResults.length === 0 ? (
                 <div className="rounded-[1.5rem] bg-slate-50 px-6 py-10 text-center text-sm leading-7 text-slate-500">
                   Aramanızla eşleşen bir içerik bulunamadı.
                 </div>
               ) : (
-                <div className="space-y-3">
-                  {results.map((result) => {
+                <div className="space-y-6">
+                  {placeResults.length > 0 ? (
+                    <section>
+                      <p className="mb-3 px-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                        Yerler
+                      </p>
+                      <div className="space-y-3">
+                        {placeResults.map((result) => (
+                          <Link
+                            key={result.slug}
+                            href={`/yer/${result.slug}`}
+                            onClick={() => setIsOpen(false)}
+                            className="grid gap-4 rounded-[1.5rem] border border-slate-200 p-4 hover:border-sky-200 hover:bg-sky-50/40 md:grid-cols-[140px_1fr]"
+                          >
+                            <div className="relative aspect-[4/3] overflow-hidden rounded-[1rem] bg-slate-100">
+                              <SafeImage
+                                src={result.heroImage}
+                                fallbackSrc={getCategoryFallbackImage("gezilecek-yerler")}
+                                alt={`${result.name} görseli`}
+                                fill
+                                sizes="140px"
+                                className="object-cover"
+                                debugLabel={`search-place:${result.slug}`}
+                              />
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">
+                                {result.placeTypeLabel}{result.destination ? ` · ${result.destination.name}` : ""}
+                              </p>
+                              <h3 className="mt-2 text-lg font-semibold tracking-tight text-slate-950">
+                                {result.name}
+                              </h3>
+                              <p className="mt-2 text-sm leading-7 text-slate-600">
+                                {result.shortDescription}
+                              </p>
+                            </div>
+                          </Link>
+                        ))}
+                      </div>
+                    </section>
+                  ) : null}
+
+                  {articleResults.length > 0 ? (
+                    <section>
+                      <p className="mb-3 px-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+                        Rehberler
+                      </p>
+                      <div className="space-y-3">
+                  {articleResults.map((result) => {
                     const isIllustration = isSvgImage(result.image);
                     const fallbackSrc = getCategoryFallbackImage(result.category.slug);
 
@@ -139,8 +200,12 @@ export default function SearchModal() {
                       </Link>
                     );
                   })}
+                      </div>
+                    </section>
+                  ) : null}
                 </div>
               )}
+              {!loading ? <div className="mt-5 border-t border-slate-100 px-2 pt-5 text-center"><Link href="/kesfet" onClick={() => setIsOpen(false)} className="text-sm font-semibold text-sky-700 hover:text-sky-800">Tüm yerleri keşfet</Link></div> : null}
             </div>
           </div>
         </div>

@@ -1,11 +1,71 @@
 generator client {
     provider = "prisma-client-js"
+    output   = "../generated/prisma"
     binaryTargets = ["native"]
 }
 
 datasource db {
     provider = "postgresql"
     url      = env("DATABASE_URL")
+}
+
+enum PlaceType {
+  BEACH
+  BAY
+  NATURE
+  HISTORICAL
+  VIEWPOINT
+  TOWN
+  ACTIVITY
+  OTHER
+}
+
+model District {
+  id               String   @id @default(cuid())
+  slug             String   @unique
+  name             String
+  shortDescription String
+  description      String   @db.Text
+  heroImage        String?
+  latitude         Float?
+  longitude        Float?
+  seoTitle         String?
+  seoDescription   String?
+  isPublished      Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  places           Place[]
+
+  @@index([isPublished])
+}
+
+model Place {
+  id                String    @id @default(cuid())
+  slug              String    @unique
+  name              String
+  shortDescription  String
+  description       String    @db.Text
+  heroImage         String?
+  latitude          Float?
+  longitude         Float?
+  address           String?
+  districtId        String?
+  district          District? @relation(fields: [districtId], references: [id], onDelete: SetNull)
+  placeType         PlaceType @default(OTHER)
+  visitDuration     String?
+  bestVisitTime     String?
+  parkingInfo       String?
+  accessInfo        String?
+  accessibilityInfo String?
+  googleMapsUrl     String?
+  isFeatured        Boolean   @default(false)
+  isPublished       Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([districtId])
+  @@index([isPublished])
+  @@index([placeType])
 }
 
 model Category {

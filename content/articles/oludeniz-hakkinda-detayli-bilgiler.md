@@ -5,6 +5,9 @@ description: "Ölüdeniz'i kalabalık, giriş düzeni, su karakteri, çocuklu ai
 excerpt: "Ölüdeniz'e sadece bir fotoğraf noktası gibi değil; saat seçimi, farklı alan kullanımı ve çevre planıyla yaklaşmak isteyenler için kapsamlı rehber."
 category: "plajlar"
 district: "Fethiye / Ölüdeniz"
+destinationSlug: "fethiye"
+placeSlugs:
+  - "oludeniz"
 image: "/images/articles/oludeniz-hakkinda-detayli-bilgiler.jpg"
 imageAlt: "Ölüdeniz rehberi kapak görseli"
 publishedAt: "2026-04-02"

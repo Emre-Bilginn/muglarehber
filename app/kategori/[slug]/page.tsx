@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import AdPlaceholder from "@/components/ad-placeholder";
 import ArticleCard from "@/components/article-card";
 import CategoryIcon from "@/components/category-icon";
 import EmptyState from "@/components/empty-state";
@@ -116,13 +115,6 @@ export default function CategoryPage({ params }: CategoryPageProps) {
         </div>
       </section>
 
-      <div className="mx-auto max-w-7xl px-4 py-8">
-        <AdPlaceholder
-          size="banner"
-          label={`${category.name} kategori sayfası için planlanan üst reklam alanı. İçerik giriş metninin önüne geçmeyecek ölçüde tasarlanmıştır.`}
-        />
-      </div>
-
       <section className="mx-auto grid max-w-7xl gap-8 px-4 pb-14 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div>
           {articles.length === 0 ? (
@@ -137,12 +129,6 @@ export default function CategoryPage({ params }: CategoryPageProps) {
               {articles.map((article, index) => (
                 <div key={article.slug} className="space-y-6">
                   <ArticleCard article={article} variant="row" />
-                  {index === 1 ? (
-                    <AdPlaceholder
-                      size="inline"
-                      label="Kategori akışı içinde kullanılabilecek doğal reklam alanı."
-                    />
-                  ) : null}
                 </div>
               ))}
             </div>
@@ -156,11 +142,6 @@ export default function CategoryPage({ params }: CategoryPageProps) {
             </p>
             <p className="mt-4 text-sm leading-7 text-slate-600">{category.description}</p>
           </div>
-
-          <AdPlaceholder
-            size="sidebar"
-            label="Kategori yan alanı için ayrılan reklam yeri. İçeriğin okunabilirliğini bozmayacak seviyede tutulur."
-          />
 
           <div className="rounded-[2rem] border border-slate-200 bg-white p-6">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">

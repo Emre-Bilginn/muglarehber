@@ -11,10 +11,9 @@
     "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:db:push": "prisma db push",
     "prisma:seed": "prisma db seed",
-    "render:build": "yarn prisma:generate && yarn build",
-    "render:start": "yarn prisma:migrate:deploy && yarn start"
+    "render:build": "npm run prisma:generate && npm run build",
+    "render:start": "npm run prisma:migrate:deploy && npm run start"
   },
-
   "prisma": {
     "seed": "tsx --require dotenv/config scripts/seed.ts"
   },
@@ -94,7 +93,7 @@
     "jsonwebtoken": "9.0.2",
     "lodash": "4.17.21",
     "lucide-react": "0.446.0",
-    "mapbox-gl": "1.13.3",
+    "maplibre-gl": "^6.6.0",
     "next": "14.2.28",
     "next-auth": "4.24.11",
     "next-themes": "0.3.0",
@@ -122,6 +121,11 @@
     "zod": "3.23.8",
     "zustand": "5.0.3"
   },
+  "engines": {
+    "node": ">=20 <21",
+    "npm": ">=10"
+  },
+  "packageManager": "npm@10.9.0",
   "browserslist": [
     "ie >= 11",
     "> 0.5%",

@@ -5,6 +5,11 @@ description: "Akyaka'da nerede vakit geçirilir, Azmak Nehri nasıl planlanır, 
 excerpt: "Akyaka'yı yalnızca kısa bir akşam gezisi değil, serin nehir, sahil, manzara ve çevre rotalarıyla tam bir ilçe deneyimi olarak ele alan detaylı içerik."
 category: "ilceler"
 district: "Ula / Akyaka"
+destinationSlug: "akyaka"
+placeSlugs:
+  - "akyaka"
+  - "azmak-nehri"
+  - "akyaka-orman-kampi"
 image: "/images/articles/akyaka-gezi-rehberi.jpg"
 imageAlt: "Akyaka rehberi kapak görseli"
 publishedAt: "2026-03-28"

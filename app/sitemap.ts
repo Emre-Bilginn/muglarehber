@@ -1,5 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getAllArticles, guideCategories } from "@/lib/content";
+import { getPublishedDestinations } from "@/lib/destinations";
+import { getPublishedPlaces } from "@/lib/places";
 import { absoluteUrl } from "@/lib/site-config";
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -10,6 +12,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/gizlilik-politikasi",
     "/cerez-politikasi",
     "/kullanim-sartlari",
+    "/kesfet",
   ];
 
   return [
@@ -21,6 +24,16 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...guideCategories.map((category) => ({
       url: absoluteUrl(`/kategori/${category.slug}`),
       changeFrequency: "weekly" as const,
+      priority: 0.8,
+    })),
+    ...getPublishedDestinations().map((destination) => ({
+      url: absoluteUrl(`/mugla/${destination.slug}`),
+      changeFrequency: "weekly" as const,
+      priority: 0.85,
+    })),
+    ...getPublishedPlaces().map((place) => ({
+      url: absoluteUrl(`/yer/${place.slug}`),
+      changeFrequency: "monthly" as const,
       priority: 0.8,
     })),
     ...getAllArticles().map((article) => ({

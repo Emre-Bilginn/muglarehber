@@ -106,7 +106,7 @@ export function articleSchema(input: ArticleSchemaInput) {
     headline: input.title,
     description: input.description,
     mainEntityOfPage: input.url,
-    image: [input.image],
+    image: input.image ? [input.image] : undefined,
     datePublished: input.publishedAt,
     dateModified: input.updatedAt,
     articleSection: input.categoryName,
@@ -123,5 +123,64 @@ export function articleSchema(input: ArticleSchemaInput) {
         url: absoluteUrl("/icon.png"),
       },
     },
+  };
+}
+
+type DestinationSchemaInput = {
+  name: string;
+  description: string;
+  url: string;
+  image: string;
+  latitude?: number | null;
+  longitude?: number | null;
+};
+
+export function destinationSchema(input: DestinationSchemaInput) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "TouristDestination",
+    name: input.name,
+    description: input.description,
+    url: input.url,
+    image: [input.image],
+    geo:
+      input.latitude != null && input.longitude != null
+        ? {
+            "@type": "GeoCoordinates",
+            latitude: input.latitude,
+            longitude: input.longitude,
+          }
+        : undefined,
+    containedInPlace: {
+      "@type": "AdministrativeArea",
+      name: "Muğla, Türkiye",
+    },
+  };
+}
+
+type PlaceSchemaInput = {
+  name: string;
+  description: string;
+  url: string;
+  image?: string;
+  destinationName: string;
+  isTown: boolean;
+  latitude?: number | null;
+  longitude?: number | null;
+};
+
+export function placeSchema(input: PlaceSchemaInput) {
+  return {
+    "@context": "https://schema.org",
+    "@type": input.isTown ? "Place" : "TouristAttraction",
+    name: input.name,
+    description: input.description,
+    url: input.url,
+    image: input.image ? [input.image] : undefined,
+    geo:
+      input.latitude != null && input.longitude != null
+        ? { "@type": "GeoCoordinates", latitude: input.latitude, longitude: input.longitude }
+        : undefined,
+    containedInPlace: { "@type": "TouristDestination", name: input.destinationName },
   };
 }

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { searchArticles } from "@/lib/content";
+import { getDestinationBySlug } from "@/lib/destinations";
+import { placeTypeLabels, searchPlaces } from "@/lib/places";
 
 export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams.get("q") ?? "";
@@ -14,6 +16,21 @@ export async function GET(request: NextRequest) {
       slug: article.category.slug,
     },
   }));
+  const places = searchPlaces(query).map((place) => {
+    const destination = getDestinationBySlug(place.destinationSlug);
 
-  return NextResponse.json({ articles });
+    return {
+      slug: place.slug,
+      name: place.name,
+      shortDescription: place.shortDescription,
+      heroImage: place.heroImage,
+      placeType: place.placeType,
+      placeTypeLabel: placeTypeLabels[place.placeType],
+      destination: destination
+        ? { name: destination.name, slug: destination.slug }
+        : null,
+    };
+  });
+
+  return NextResponse.json({ articles, places });
 }

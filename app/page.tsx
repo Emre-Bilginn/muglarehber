@@ -1,14 +1,18 @@
 import Link from "next/link";
 import { ArrowRight, Compass, FolderKanban, ShieldCheck, Sparkles } from "lucide-react";
-import AdPlaceholder from "@/components/ad-placeholder";
 import ArticleCard from "@/components/article-card";
 import CategoryIcon from "@/components/category-icon";
+import DestinationCard from "@/components/destination-card";
 import { getCategoriesWithCounts, getFeaturedArticles, getLatestArticles } from "@/lib/content";
+import { getPublishedDestinations } from "@/lib/destinations";
 
 export default function HomePage() {
   const featuredArticles = getFeaturedArticles(4);
   const latestArticles = getLatestArticles(6);
   const categories = getCategoriesWithCounts();
+  const featuredDestinations = getPublishedDestinations().filter((destination) =>
+    ["fethiye", "bodrum", "marmaris", "datca", "akyaka", "dalyan"].includes(destination.slug),
+  );
   const heroArticle = featuredArticles[0];
   const secondaryFeatured = featuredArticles.slice(1);
 
@@ -96,12 +100,19 @@ export default function HomePage() {
         </div>
       </section>
 
-      <div className="mx-auto max-w-7xl px-4 py-8">
-        <AdPlaceholder
-          size="banner"
-          label="Ana sayfa üstü reklam yerleşimi için ayrılmış dengeli alan. İçerik akışını bölmeden ileride AdSense entegrasyonuna uygun şekilde kullanılabilir."
-        />
-      </div>
+      <section className="border-b border-slate-200 bg-slate-50">
+        <div className="mx-auto max-w-7xl px-4 py-12 md:py-14">
+          <div className="max-w-3xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">Bölge rehberleri</p>
+            <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">Muğla'yı bölgelere göre keşfet</h2>
+            <p className="mt-4 text-base leading-8 text-slate-600">Tatilinizi sahil, doğa, tarih ve günlük rota karakterine göre planlamak için önce bölgenizi seçin.</p>
+          </div>
+          <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+            {featuredDestinations.map((destination) => <DestinationCard key={destination.slug} destination={destination} />)}
+          </div>
+          <Link href="/kesfet" className="mt-8 inline-flex items-center rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white hover:bg-slate-800">Muğla’daki yerleri keşfet</Link>
+        </div>
+      </section>
 
       <section className="mx-auto max-w-7xl px-4 py-8 md:py-10">
         <div className="flex items-center justify-between gap-4">
@@ -202,13 +213,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      <div className="mx-auto max-w-7xl px-4 pb-6">
-        <AdPlaceholder
-          size="inline"
-          label="İçerik akışı içinde kullanılabilecek doğal reklam alanı. Yalnızca ileride ve içerik yoğunluğu korunarak değerlendirilmelidir."
-        />
-      </div>
-
       <section className="mx-auto max-w-7xl px-4 py-8 md:py-12">
         <div className="flex items-center justify-between gap-4">
           <div>
@@ -230,12 +234,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      <div className="mx-auto max-w-7xl px-4 pb-12">
-        <AdPlaceholder
-          size="footer"
-          label="Sayfa sonu reklam alanı için ayrılmış bölüm. İçerik özetini ve ilgili yazıları gölgelemeyecek biçimde tasarlanmıştır."
-        />
-      </div>
     </div>
   );
 }

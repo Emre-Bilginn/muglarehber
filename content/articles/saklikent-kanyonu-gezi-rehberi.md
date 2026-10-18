@@ -5,6 +5,9 @@ description: "Saklıkent Kanyonu'na gitmeden önce bilinmesi gereken zemin, su s
 excerpt: "Saklıkent'i yalnızca serin bir yaz durağı değil; hazırlık, güvenlik ve tempo açısından doğru kurgulanması gereken bir doğa rotası olarak ele alan kapsamlı içerik."
 category: "doga-rotalari"
 district: "Fethiye / Seydikemer"
+destinationSlug: "fethiye"
+placeSlugs:
+  - "saklikent-kanyonu"
 image: "/images/articles/saklikent-kanyonu-gezi-rehberi.jpg"
 imageAlt: "Saklıkent Kanyonu kapak görseli"
 publishedAt: "2026-03-18"

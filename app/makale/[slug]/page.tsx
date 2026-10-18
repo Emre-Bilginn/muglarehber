@@ -7,7 +7,6 @@ import {
   Clock3,
   User2,
 } from "lucide-react";
-import AdPlaceholder from "@/components/ad-placeholder";
 import ArticleCard from "@/components/article-card";
 import MarkdownContent from "@/components/markdown-content";
 import ShareLinks from "@/components/share-links";
@@ -23,6 +22,8 @@ import {
 } from "@/lib/content";
 import { getCategoryFallbackImage, isSvgImage } from "@/lib/image-utils";
 import { absoluteUrl } from "@/lib/site-config";
+import { getPlacesBySlugs } from "@/lib/places";
+import PlaceCard from "@/components/place-card";
 
 type ArticlePageProps = {
   params: {
@@ -82,6 +83,7 @@ export default function ArticlePage({ params }: ArticlePageProps) {
 
   const relatedArticles = getRelatedArticles(article, 3);
   const { previous, next } = getPrevNextArticles(article);
+  const places = getPlacesBySlugs(article.placeSlugs);
   const isIllustration = isSvgImage(article.image);
   const fallbackSrc = getCategoryFallbackImage(article.category.slug);
   const breadcrumbItems = [
@@ -169,13 +171,6 @@ export default function ArticlePage({ params }: ArticlePageProps) {
         </div>
       </section>
 
-      <div className="mx-auto max-w-7xl px-4 py-8">
-        <AdPlaceholder
-          size="banner"
-          label="Makale üstü reklam yerleşimi için ayrılmış alan. Yayın akışını bozmadan içerik başlangıcının üzerine konumlanabilir."
-        />
-      </div>
-
       <section className="mx-auto grid max-w-7xl gap-8 px-4 pb-14 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-8">
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -215,12 +210,9 @@ export default function ArticlePage({ params }: ArticlePageProps) {
                   </ul>
                 </div>
 
-                <AdPlaceholder
-                  size="inline"
-                  label="Makale içi reklam için ayrılmış alan. Uzun rehber akışında yalnızca doğal kırılım noktalarında kullanılmalıdır."
-                />
-
                 <MarkdownContent content={article.body} />
+
+                {places.length > 0 ? <section><p className="text-xs font-semibold uppercase tracking-[0.18em] text-sky-700">Bu rehberdeki yerler</p><h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">Planınızı tamamlayan duraklar</h2><div className="mt-6 grid gap-6 md:grid-cols-2">{places.map((place) => <PlaceCard key={place.slug} place={place} />)}</div></section> : null}
 
                 <div className="rounded-[1.75rem] border border-emerald-200 bg-emerald-50 px-5 py-5">
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-800">
@@ -244,10 +236,6 @@ export default function ArticlePage({ params }: ArticlePageProps) {
                   <p className="mt-3 text-sm leading-7 text-slate-600">{article.author.bio}</p>
                 </div>
                 <ShareLinks title={article.title} url={article.url} />
-                <AdPlaceholder
-                  size="sidebar"
-                  label="Yan kolon reklam alanı. İçindekiler ve paylaşım modülleriyle rekabet etmeyecek ölçüde planlanmıştır."
-                />
               </div>
             </div>
           </div>

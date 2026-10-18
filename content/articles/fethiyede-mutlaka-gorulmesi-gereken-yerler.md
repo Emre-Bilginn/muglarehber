@@ -5,6 +5,12 @@ description: "Fethiye'de görülmesi gereken yerleri gün planı mantığıyla a
 excerpt: "Fethiye'yi yalnızca Ölüdeniz'den ibaret görmeyen; sahil, tarih, merkez ve çevre duraklarını gün bazında açıklayan kapsamlı rota rehberi."
 category: "ilceler"
 district: "Fethiye"
+destinationSlug: "fethiye"
+placeSlugs:
+  - "oludeniz"
+  - "saklikent-kanyonu"
+  - "kayakoy-orenyeri"
+  - "amintas-kaya-mezari"
 image: "/images/articles/fethiyede-mutlaka-gorulmesi-gereken-yerler.jpg"
 imageAlt: "Fethiye rehberi kapak görseli"
 publishedAt: "2026-03-16"
