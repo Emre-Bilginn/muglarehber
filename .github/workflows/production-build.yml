@@ -1,0 +1,52 @@
+name: Production build verification
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/discover-map-and-source-reconciliation
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Node 20 production build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # This is deliberately unreachable: Prisma validates the URL format but
+      # this workflow must never contact a production database.
+      DATABASE_URL: postgresql://ci:ci@127.0.0.1:65432/kesfetmugla_ci?connect_timeout=1
+      NEXT_PUBLIC_SITE_URL: https://ci.invalid
+      SITE_URL: https://ci.invalid
+      DB_DEBUG: "false"
+      NEXT_DIST_DIR: .next-ci
+      NEXT_TELEMETRY_DISABLED: "1"
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies from lockfile
+        # postinstall runs Prisma generate in this project. Keep lifecycle
+        # scripts disabled here and invoke Prisma explicitly below.
+        run: npm ci --ignore-scripts
+
+      - name: Generate Prisma Client
+        run: npm run prisma:generate
+
+      - name: Type-check
+        run: npx tsc --noEmit
+
+      - name: Build production application
+        run: npm run build
